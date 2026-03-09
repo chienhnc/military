@@ -3,13 +3,16 @@ package com.military.controllers;
 import com.military.models.ERole;
 import com.military.models.Role;
 import com.military.models.User;
+import com.military.exception.AppException;
+import com.military.exception.ErrorCode;
 import com.military.payload.request.LoginRequest;
+import com.military.payload.response.BaseResponse;
 import com.military.payload.request.SignupRequest;
-import com.military.payload.response.MessageResponse;
 import com.military.payload.response.UserInfoResponse;
 import com.military.repository.RoleRepository;
 import com.military.repository.UserRepository;
 import com.military.security.jwt.JwtUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import com.military.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,36 +52,39 @@ public class AuthController {
   JwtUtils jwtUtils;
 
   @PostMapping("/signin")
-  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+  public ResponseEntity<BaseResponse<UserInfoResponse>> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
+         HttpServletRequest request) {
+    try {
+      Authentication authentication = authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-    Authentication authentication = authenticationManager
-        .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+      SecurityContextHolder.getContext().setAuthentication(authentication);
 
-    SecurityContextHolder.getContext().setAuthentication(authentication);
+      UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+      String jwt = jwtUtils.generateTokenFromUsername(userDetails.getUsername());
 
-    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-    String jwt = jwtUtils.generateTokenFromUsername(userDetails.getUsername());
+      List<String> roles = userDetails.getAuthorities().stream()
+              .map(GrantedAuthority::getAuthority)
+              .collect(Collectors.toList());
 
-    List<String> roles = userDetails.getAuthorities().stream()
-        .map(GrantedAuthority::getAuthority)
-        .collect(Collectors.toList());
+      UserInfoResponse responseData = new UserInfoResponse(jwt, userDetails.getId(), userDetails.getUsername(),
+              userDetails.getEmail(), roles);
 
-    return ResponseEntity.ok()
-        .body(new UserInfoResponse(jwt,
-                                   userDetails.getId(),
-                                   userDetails.getUsername(),
-                                   userDetails.getEmail(),
-                                   roles));
+      return ResponseEntity.ok(BaseResponse.of(200, responseData, request.getServletPath()));
+    } catch (Exception e) {
+      throw new AppException(ErrorCode.USERNAME_PASSWORD_INCORRECT);
+    }
   }
 
   @PostMapping("/signup")
-  public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+  public ResponseEntity<BaseResponse<String>> registerUser(@Valid @RequestBody SignupRequest signUpRequest,
+                                                           HttpServletRequest request) {
     if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-      return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
+      throw new AppException(ErrorCode.USERNAME_ALREADY_TAKEN);
     }
 
     if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-      return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
+      throw new AppException(ErrorCode.EMAIL_ALREADY_IN_USE);
     }
 
     // Create new user's account
@@ -91,26 +97,26 @@ public class AuthController {
 
     if (strRoles == null) {
       Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-          .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+          .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
       roles.add(userRole);
     } else {
       strRoles.forEach(role -> {
         switch (role) {
         case "admin":
           Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-              .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+              .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
           roles.add(adminRole);
 
           break;
         case "mod":
           Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
-              .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+              .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
           roles.add(modRole);
 
           break;
         default:
           Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-              .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+              .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
           roles.add(userRole);
         }
       });
@@ -119,11 +125,12 @@ public class AuthController {
     user.setRoles(roles);
     userRepository.save(user);
 
-    return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    return ResponseEntity.ok(BaseResponse.of(200, "User registered successfully!", request.getServletPath()));
   }
 
   @PostMapping("/signout")
-  public ResponseEntity<?> logoutUser() {
-    return ResponseEntity.ok(new MessageResponse("Stateless JWT does not require server-side signout."));
+  public ResponseEntity<BaseResponse<String>> logoutUser(HttpServletRequest request) {
+    return ResponseEntity.ok(
+        BaseResponse.of(200, "Stateless JWT does not require server-side signout.", request.getServletPath()));
   }
 }

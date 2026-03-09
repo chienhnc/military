@@ -1,5 +1,7 @@
 package com.military.security.services;
 
+import com.military.exception.AppException;
+import com.military.exception.ErrorCode;
 import com.military.models.User;
 import com.military.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   @Transactional
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+        .orElseThrow(() -> new AppException(ErrorCode.USERNAME_PASSWORD_INCORRECT));
 
     return UserDetailsImpl.build(user);
   }
