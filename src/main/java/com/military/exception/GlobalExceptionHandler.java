@@ -3,6 +3,7 @@ package com.military.exception;
 import com.military.payload.response.BaseResponse;
 import com.military.payload.response.ErrorDetail;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,16 @@ public class GlobalExceptionHandler {
     }
 
     ErrorDetail errorDetail = new ErrorDetail(errorCode.getCode(), description);
+    BaseResponse<ErrorDetail> response = BaseResponse.of(status.value(), errorDetail, request.getServletPath());
+    return ResponseEntity.status(status).body(response);
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<BaseResponse<ErrorDetail>> handleConstraintViolationException(ConstraintViolationException ex,
+                                                                                       HttpServletRequest request) {
+    ErrorCode errorCode = ErrorCode.VALIDATION_FAILED;
+    HttpStatus status = errorCode.getHttpStatus();
+    ErrorDetail errorDetail = new ErrorDetail(errorCode.getCode(), ex.getMessage());
     BaseResponse<ErrorDetail> response = BaseResponse.of(status.value(), errorDetail, request.getServletPath());
     return ResponseEntity.status(status).body(response);
   }
