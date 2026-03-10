@@ -57,7 +57,7 @@ Resources:
     Properties:
       StageName: Prod
       BinaryMediaTypes:
-        - "*/*"
+        - "multipart/form-data"
 
   MilitaryApiFunction:
     Type: AWS::Serverless::Function

@@ -17,6 +17,10 @@ public class StreamLambdaHandler implements RequestStreamHandler {
   static {
     try {
       handler = SpringBootLambdaContainerHandler.getAwsProxyHandler(Main.class);
+      handler.getContainerConfig().setDefaultContentCharset("UTF-8");
+      handler.getContainerConfig().addBinaryContentTypes(
+          "multipart/form-data"
+      );
     } catch (ContainerInitializationException ex) {
       throw new RuntimeException("Could not initialize Spring Boot application", ex);
     }
