@@ -31,6 +31,10 @@ Swagger endpoints:
 - `{ApiEndpoint}v3/api-docs`
 - `{ApiEndpoint}swagger-ui.html`
 
+Example signup endpoint (no stage prefix):
+
+- `{ApiEndpoint}api/auth/signup`
+
 ## Notes
 
 - Lambda execution role needs `s3:GetObject`, `s3:PutObject`, `s3:DeleteObject` on your image bucket.

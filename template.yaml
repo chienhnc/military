@@ -52,12 +52,10 @@ Resources:
         - AttributeName: id
           KeyType: HASH
 
-  MilitaryApiGateway:
-    Type: AWS::Serverless::Api
+  MilitaryHttpApi:
+    Type: AWS::Serverless::HttpApi
     Properties:
-      StageName: Prod
-      BinaryMediaTypes:
-        - "multipart/form-data"
+      StageName: $default
 
   MilitaryApiFunction:
     Type: AWS::Serverless::Function
@@ -96,19 +94,19 @@ Resources:
           DYNAMODB_PERSONNEL_TABLE: !Ref PersonnelTable
       Events:
         RootApi:
-          Type: Api
+          Type: HttpApi
           Properties:
-            RestApiId: !Ref MilitaryApiGateway
+            ApiId: !Ref MilitaryHttpApi
             Path: /
             Method: ANY
         ProxyApi:
-          Type: Api
+          Type: HttpApi
           Properties:
-            RestApiId: !Ref MilitaryApiGateway
+            ApiId: !Ref MilitaryHttpApi
             Path: /{proxy+}
             Method: ANY
 
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL
-    Value: !Sub https://${MilitaryApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/
+    Value: !Sub https://${MilitaryHttpApi}.execute-api.${AWS::Region}.amazonaws.com/
