@@ -33,7 +33,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
@@ -104,7 +103,6 @@ public class AuthController {
   }
 
   @PostMapping("/signup")
-  @Transactional
   @Operation(
       summary = "Dang ky user + tao quan nhan",
       description = "Tao user moi va dong thoi tao thong tin quan nhan, gan quan he 1-1 user <-> quan nhan."

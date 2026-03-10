@@ -13,20 +13,24 @@ import com.military.payload.request.MilitaryPersonnelRequest;
 import com.military.payload.response.MilitaryPersonnelResponse;
 import com.military.repository.MilitaryPersonnelRepository;
 import com.military.service.MilitaryPersonnelService;
-import lombok.RequiredArgsConstructor;
+import com.military.service.dto.PersonnelImage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseBytes;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.text.Normalizer;
 import java.util.Base64;
 import java.util.Optional;
@@ -40,24 +44,29 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
   private static final Pattern MULTI_DASH = Pattern.compile("-+");
   private static final int QR_SIZE = 300;
   private static final String IMAGE_ENDPOINT = "/api/personnel/images/";
+  private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
   private final MilitaryPersonnelRepository militaryPersonnelRepository;
-  private final Path uploadDirectory;
+  private final S3Client s3Client;
+  private final String bucketName;
+  private final String objectPrefix;
   private final Gson gson;
 
   public MilitaryPersonnelServiceImpl(MilitaryPersonnelRepository militaryPersonnelRepository,
-                                      @Value("${military.app.upload-dir:uploads/personnel}") String uploadDir, Gson gson) {
+                                      S3Client s3Client,
+                                      @Value("${military.app.s3.bucket}") String bucketName,
+                                      @Value("${military.app.s3.prefix:personnel}") String objectPrefix,
+                                      Gson gson) {
     this.militaryPersonnelRepository = militaryPersonnelRepository;
-    this.uploadDirectory = Paths.get(uploadDir).toAbsolutePath().normalize();
+    this.s3Client = s3Client;
+    this.bucketName = bucketName;
+    this.objectPrefix = normalizePrefix(objectPrefix);
     this.gson = gson;
-    try {
-      Files.createDirectories(this.uploadDirectory);
-    } catch (IOException ex) {
-      throw new AppException(ErrorCode.PERSONNEL_IMAGE_SAVE_FAILED);
+    if (this.bucketName == null || this.bucketName.trim().isEmpty()) {
+      throw new IllegalStateException("military.app.s3.bucket must not be empty");
     }
   }
 
-  @Transactional
   public MilitaryPersonnelResponse create(MilitaryPersonnelRequest militaryPersonnelRequest) {
     MilitaryPersonnel personnel = new MilitaryPersonnel(militaryPersonnelRequest);
     personnel.setCode(generateCode(militaryPersonnelRequest));
@@ -67,7 +76,6 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
     return toResponse(saved);
   }
 
-  @Transactional
   public MilitaryPersonnelResponse update(Long id,
                                           MilitaryPersonnelRequest militaryPersonnelRequest) {
     MilitaryPersonnel personnel = findEntityById(id);
@@ -88,12 +96,10 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
     return toResponse(saved);
   }
 
-  @Transactional(readOnly = true)
   public MilitaryPersonnelResponse getById(Long id) {
     return toResponse(findEntityById(id));
   }
 
-  @Transactional(readOnly = true)
   public Page<MilitaryPersonnelResponse> list(String keyword, Pageable pageable) {
     if (keyword == null || keyword.trim().isEmpty()) {
       return militaryPersonnelRepository.findAll(pageable).map(this::toResponse);
@@ -104,23 +110,37 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
         .map(this::toResponse);
   }
 
-  @Transactional
   public void delete(Long id) {
     MilitaryPersonnel personnel = findEntityById(id);
     deleteImageIfExists(personnel.getImagePath());
     militaryPersonnelRepository.delete(personnel);
   }
 
-  @Transactional(readOnly = true)
-  public Path resolveImagePath(String filename) {
-    Path path = uploadDirectory.resolve(filename).normalize();
-    if (!path.startsWith(uploadDirectory)) {
+  public PersonnelImage loadImage(String filename) {
+    if (filename == null || filename.isBlank()) {
       throw new AppException(ErrorCode.PERSONNEL_NOT_FOUND);
     }
-    if (!Files.exists(path)) {
+    String key = buildObjectKey(filename);
+    try {
+      ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(
+          GetObjectRequest.builder()
+              .bucket(bucketName)
+              .key(key)
+              .build()
+      );
+      String contentType = objectBytes.response().contentType();
+      if (contentType == null || contentType.isBlank()) {
+        contentType = DEFAULT_CONTENT_TYPE;
+      }
+      return new PersonnelImage(filename, contentType, objectBytes.asByteArray());
+    } catch (NoSuchKeyException ex) {
       throw new AppException(ErrorCode.PERSONNEL_NOT_FOUND);
+    } catch (S3Exception ex) {
+      if (ex.statusCode() == 404) {
+        throw new AppException(ErrorCode.PERSONNEL_NOT_FOUND);
+      }
+      throw new AppException(ErrorCode.PERSONNEL_IMAGE_SAVE_FAILED);
     }
-    return path;
   }
 
   private MilitaryPersonnel findEntityById(Long id) {
@@ -202,12 +222,23 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
 
     String extension = extractExtension(imageFile.getOriginalFilename());
     String fileName = UUID.randomUUID() + extension;
-    Path target = uploadDirectory.resolve(fileName).normalize();
+    String key = buildObjectKey(fileName);
 
     try {
-      Files.copy(imageFile.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+      String contentType = imageFile.getContentType();
+      if (contentType == null || contentType.isBlank()) {
+        contentType = DEFAULT_CONTENT_TYPE;
+      }
+      s3Client.putObject(
+          PutObjectRequest.builder()
+              .bucket(bucketName)
+              .key(key)
+              .contentType(contentType)
+              .build(),
+          RequestBody.fromInputStream(imageFile.getInputStream(), imageFile.getSize())
+      );
       return fileName;
-    } catch (IOException ex) {
+    } catch (IOException | S3Exception ex) {
       throw new AppException(ErrorCode.PERSONNEL_IMAGE_SAVE_FAILED);
     }
   }
@@ -227,12 +258,38 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
     if (imagePath == null || imagePath.isEmpty()) {
       return;
     }
-    Path path = uploadDirectory.resolve(imagePath).normalize();
     try {
-      Files.deleteIfExists(path);
-    } catch (IOException ex) {
+      s3Client.deleteObject(
+          DeleteObjectRequest.builder()
+              .bucket(bucketName)
+              .key(buildObjectKey(imagePath))
+              .build()
+      );
+    } catch (NoSuchKeyException ignored) {
+      return;
+    } catch (S3Exception ex) {
+      if (ex.statusCode() == 404) {
+        return;
+      }
       throw new AppException(ErrorCode.PERSONNEL_IMAGE_DELETE_FAILED);
     }
+  }
+
+  private String buildObjectKey(String fileName) {
+    return objectPrefix + fileName;
+  }
+
+  private String normalizePrefix(String rawPrefix) {
+    if (rawPrefix == null || rawPrefix.isBlank()) {
+      return "";
+    }
+    String normalized = rawPrefix.trim();
+    normalized = normalized.replaceAll("^/+", "");
+    normalized = normalized.replaceAll("/+$", "");
+    if (normalized.isEmpty()) {
+      return "";
+    }
+    return normalized + "/";
   }
 
   private MilitaryPersonnelResponse toResponse(MilitaryPersonnel personnel) {

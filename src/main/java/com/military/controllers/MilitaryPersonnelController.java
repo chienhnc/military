@@ -4,6 +4,7 @@ import com.military.payload.request.MilitaryPersonnelRequest;
 import com.military.payload.response.BaseResponse;
 import com.military.payload.response.MilitaryPersonnelResponse;
 import com.military.service.MilitaryPersonnelService;
+import com.military.service.dto.PersonnelImage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,8 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -24,11 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Validated
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -144,23 +139,14 @@ public class MilitaryPersonnelController {
       @ApiResponse(responseCode = "200", description = "Lay anh thanh cong"),
       @ApiResponse(responseCode = "404", description = "Khong tim thay anh")
   })
-  public ResponseEntity<UrlResource> getImage(@PathVariable String filename) throws MalformedURLException {
-    Path path = militaryPersonnelService.resolveImagePath(filename);
-    UrlResource resource = new UrlResource(path.toUri());
-
-    String contentType = "application/octet-stream";
-    try {
-      String detectedType = Files.probeContentType(path);
-      if (detectedType != null) {
-        contentType = detectedType;
-      }
-    } catch (IOException ignored) {
-      contentType = "application/octet-stream";
-    }
+  public ResponseEntity<ByteArrayResource> getImage(@PathVariable String filename) {
+    PersonnelImage image = militaryPersonnelService.loadImage(filename);
+    ByteArrayResource resource = new ByteArrayResource(image.content());
 
     return ResponseEntity.ok()
-        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-        .contentType(MediaType.parseMediaType(contentType))
+        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + image.filename() + "\"")
+        .contentType(MediaType.parseMediaType(image.contentType()))
+        .contentLength(image.content().length)
         .body(resource);
   }
 }

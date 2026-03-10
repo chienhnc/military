@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: military-manager Spring Boot API on AWS Lambda
+
+Parameters:
+  JwtSecret:
+    Type: String
+    NoEcho: true
+    Description: Base64-encoded JWT secret (minimum 256-bit key)
+  S3Bucket:
+    Type: String
+    Description: S3 bucket name for personnel images
+  S3Prefix:
+    Type: String
+    Default: personnel
+    Description: S3 prefix/folder for personnel images
+
+Resources:
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: users
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  RolesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: roles
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: name
+          AttributeType: S
+      KeySchema:
+        - AttributeName: name
+          KeyType: HASH
+
+  PersonnelTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: military_personnel
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  MilitaryApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      BinaryMediaTypes:
+        - "*/*"
+
+  MilitaryApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: military-manager-api
+      Runtime: java17
+      Handler: com.military.StreamLambdaHandler::handleRequest
+      CodeUri: target/military-manager-0.0.1-SNAPSHOT-aws.jar
+      MemorySize: 1024
+      Timeout: 30
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+                - s3:GetObject
+                - s3:DeleteObject
+              Resource: !Sub arn:aws:s3:::${S3Bucket}/*
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:GetItem
+                - dynamodb:DeleteItem
+                - dynamodb:Scan
+              Resource:
+                - !GetAtt UsersTable.Arn
+                - !GetAtt RolesTable.Arn
+                - !GetAtt PersonnelTable.Arn
+      Environment:
+        Variables:
+          JWT_SECRET: !Ref JwtSecret
+          S3_BUCKET: !Ref S3Bucket
+          S3_PREFIX: !Ref S3Prefix
+          DYNAMODB_USERS_TABLE: !Ref UsersTable
+          DYNAMODB_ROLES_TABLE: !Ref RolesTable
+          DYNAMODB_PERSONNEL_TABLE: !Ref PersonnelTable
+      Events:
+        RootApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MilitaryApiGateway
+            Path: /
+            Method: ANY
+        ProxyApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MilitaryApiGateway
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${MilitaryApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/
