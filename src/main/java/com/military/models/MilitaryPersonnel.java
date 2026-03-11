@@ -11,9 +11,10 @@ public class MilitaryPersonnel {
   private Long id;
   private String code;
   private String fullName;
-  private String rankCode;
+  private String regionCode;
+  private EMilitaryRank rankCode;
   private String unitCode;
-  private String positionCode;
+  private EMilitaryPosition positionCode;
   private String qrCode;
   private String imagePath;
 

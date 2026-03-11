@@ -15,7 +15,26 @@ public enum ErrorCode {
   PERSONNEL_IMAGE_SAVE_FAILED("MIL00010", "error.personnel.image_save_failed", HttpStatus.INTERNAL_SERVER_ERROR),
   PERSONNEL_IMAGE_DELETE_FAILED("MIL00011", "error.personnel.image_delete_failed", HttpStatus.INTERNAL_SERVER_ERROR),
   PERSONNEL_INVALID_INPUT("MIL00012", "error.personnel.invalid_input", HttpStatus.BAD_REQUEST),
-  PERSONNEL_ALREADY_ASSIGNED("MIL00013", "error.personnel.already_assigned", HttpStatus.BAD_REQUEST);
+  PERSONNEL_ALREADY_ASSIGNED("MIL00013", "error.personnel.already_assigned", HttpStatus.BAD_REQUEST),
+  MILITARY_REGION_NOT_FOUND("MIL00014", "error.military_region.not_found", HttpStatus.NOT_FOUND),
+  MILITARY_REGION_CODE_EXISTS("MIL00015", "error.military_region.code_exists", HttpStatus.BAD_REQUEST),
+  MILITARY_REGION_LOGO_SAVE_FAILED("MIL00016", "error.military_region.logo_save_failed",
+      HttpStatus.INTERNAL_SERVER_ERROR),
+  MILITARY_REGION_LOGO_DELETE_FAILED("MIL00017", "error.military_region.logo_delete_failed",
+      HttpStatus.INTERNAL_SERVER_ERROR),
+  COMMON_INVALID_FILE_CATEGORY("MIL00018", "error.common.invalid_file_category", HttpStatus.BAD_REQUEST),
+  MILITARY_UNIT_NOT_FOUND("MIL00019", "error.military_unit.not_found", HttpStatus.NOT_FOUND),
+  MILITARY_UNIT_CODE_EXISTS("MIL00020", "error.military_unit.code_exists", HttpStatus.BAD_REQUEST),
+  MILITARY_UNIT_LOGO_SAVE_FAILED("MIL00021", "error.military_unit.logo_save_failed",
+      HttpStatus.INTERNAL_SERVER_ERROR),
+  MILITARY_UNIT_LOGO_DELETE_FAILED("MIL00022", "error.military_unit.logo_delete_failed",
+      HttpStatus.INTERNAL_SERVER_ERROR),
+  SUBMISSION_FLOW_NOT_FOUND("MIL00023", "error.submission_flow.not_found", HttpStatus.NOT_FOUND),
+  SUBMISSION_FLOW_INVALID_GROUPS("MIL00024", "error.submission_flow.invalid_groups", HttpStatus.BAD_REQUEST),
+  SUBMISSION_FLOW_USER_NOT_FOUND("MIL00025", "error.submission_flow.user_not_found", HttpStatus.BAD_REQUEST),
+  SUBMISSION_GROUP_NOT_FOUND("MIL00026", "error.submission_group.not_found", HttpStatus.NOT_FOUND),
+  SUBMISSION_GROUP_IN_USE("MIL00027", "error.submission_group.in_use", HttpStatus.BAD_REQUEST),
+  SUBMISSION_GROUP_INVALID_USERS("MIL00028", "error.submission_group.invalid_users", HttpStatus.BAD_REQUEST);
 
   private final String code;
   private final String messageKey;

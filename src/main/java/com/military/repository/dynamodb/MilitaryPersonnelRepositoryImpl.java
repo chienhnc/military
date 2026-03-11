@@ -1,5 +1,7 @@
 package com.military.repository.dynamodb;
 
+import com.military.models.EMilitaryPosition;
+import com.military.models.EMilitaryRank;
 import com.military.models.MilitaryPersonnel;
 import com.military.repository.MilitaryPersonnelRepository;
 import com.military.repository.dynamodb.item.MilitaryPersonnelItem;
@@ -127,9 +129,10 @@ public class MilitaryPersonnelRepositoryImpl implements MilitaryPersonnelReposit
     item.setId(model.getId());
     item.setCode(model.getCode());
     item.setFullName(model.getFullName());
-    item.setRankCode(model.getRankCode());
+    item.setRegionCode(model.getRegionCode());
+    item.setRankCode(model.getRankCode() == null ? null : model.getRankCode().name());
     item.setUnitCode(model.getUnitCode());
-    item.setPositionCode(model.getPositionCode());
+    item.setPositionCode(model.getPositionCode() == null ? null : model.getPositionCode().name());
     item.setQrCode(model.getQrCode());
     item.setImagePath(model.getImagePath());
     return item;
@@ -140,11 +143,34 @@ public class MilitaryPersonnelRepositoryImpl implements MilitaryPersonnelReposit
     model.setId(item.getId());
     model.setCode(item.getCode());
     model.setFullName(item.getFullName());
-    model.setRankCode(item.getRankCode());
+    model.setRegionCode(item.getRegionCode());
+    model.setRankCode(parseRank(item.getRankCode()));
     model.setUnitCode(item.getUnitCode());
-    model.setPositionCode(item.getPositionCode());
+    model.setPositionCode(parsePosition(item.getPositionCode()));
     model.setQrCode(item.getQrCode());
     model.setImagePath(item.getImagePath());
     return model;
+  }
+
+  private EMilitaryRank parseRank(String rankCode) {
+    if (rankCode == null || rankCode.isBlank()) {
+      return null;
+    }
+    try {
+      return EMilitaryRank.valueOf(rankCode);
+    } catch (IllegalArgumentException ex) {
+      return null;
+    }
+  }
+
+  private EMilitaryPosition parsePosition(String positionCode) {
+    if (positionCode == null || positionCode.isBlank()) {
+      return null;
+    }
+    try {
+      return EMilitaryPosition.valueOf(positionCode);
+    } catch (IllegalArgumentException ex) {
+      return null;
+    }
   }
 }

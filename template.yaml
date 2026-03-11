@@ -52,6 +52,54 @@ Resources:
         - AttributeName: id
           KeyType: HASH
 
+  RegionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: military_regions
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  UnitsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: military_units
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  SubmissionGroupsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: submission_groups
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  SubmissionFlowsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: submission_flows
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
   MilitaryHttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -84,6 +132,10 @@ Resources:
                 - !GetAtt UsersTable.Arn
                 - !GetAtt RolesTable.Arn
                 - !GetAtt PersonnelTable.Arn
+                - !GetAtt RegionsTable.Arn
+                - !GetAtt UnitsTable.Arn
+                - !GetAtt SubmissionGroupsTable.Arn
+                - !GetAtt SubmissionFlowsTable.Arn
       Environment:
         Variables:
           JWT_SECRET: !Ref JwtSecret
@@ -92,6 +144,10 @@ Resources:
           DYNAMODB_USERS_TABLE: !Ref UsersTable
           DYNAMODB_ROLES_TABLE: !Ref RolesTable
           DYNAMODB_PERSONNEL_TABLE: !Ref PersonnelTable
+          DYNAMODB_REGIONS_TABLE: !Ref RegionsTable
+          DYNAMODB_UNITS_TABLE: !Ref UnitsTable
+          DYNAMODB_SUBMISSION_GROUPS_TABLE: !Ref SubmissionGroupsTable
+          DYNAMODB_SUBMISSION_FLOWS_TABLE: !Ref SubmissionFlowsTable
       Events:
         RootApi:
           Type: HttpApi

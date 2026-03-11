@@ -8,10 +8,14 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.military.exception.AppException;
 import com.military.exception.ErrorCode;
+import com.military.models.EMilitaryPosition;
+import com.military.models.EMilitaryRank;
 import com.military.models.MilitaryPersonnel;
+import com.military.models.MilitaryUnit;
 import com.military.payload.request.MilitaryPersonnelRequest;
 import com.military.payload.response.MilitaryPersonnelResponse;
 import com.military.repository.MilitaryPersonnelRepository;
+import com.military.repository.MilitaryUnitRepository;
 import com.military.service.MilitaryPersonnelService;
 import com.military.service.dto.PersonnelImage;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.Normalizer;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -43,21 +48,24 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
   private static final Pattern NON_ALNUM = Pattern.compile("[^A-Za-z0-9]+");
   private static final Pattern MULTI_DASH = Pattern.compile("-+");
   private static final int QR_SIZE = 300;
-  private static final String IMAGE_ENDPOINT = "/api/personnel/images/";
+  private static final String IMAGE_ENDPOINT = "/api/common/images/personnel/";
   private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
   private final MilitaryPersonnelRepository militaryPersonnelRepository;
+  private final MilitaryUnitRepository militaryUnitRepository;
   private final S3Client s3Client;
   private final String bucketName;
   private final String objectPrefix;
   private final Gson gson;
 
   public MilitaryPersonnelServiceImpl(MilitaryPersonnelRepository militaryPersonnelRepository,
+                                      MilitaryUnitRepository militaryUnitRepository,
                                       S3Client s3Client,
                                       @Value("${military.app.s3.bucket}") String bucketName,
                                       @Value("${military.app.s3.prefix:personnel}") String objectPrefix,
                                       Gson gson) {
     this.militaryPersonnelRepository = militaryPersonnelRepository;
+    this.militaryUnitRepository = militaryUnitRepository;
     this.s3Client = s3Client;
     this.bucketName = bucketName;
     this.objectPrefix = normalizePrefix(objectPrefix);
@@ -68,8 +76,12 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
   }
 
   public MilitaryPersonnelResponse create(MilitaryPersonnelRequest militaryPersonnelRequest) {
+    MilitaryUnit unit = resolveUnitByCode(militaryPersonnelRequest.getUnitCode());
     MilitaryPersonnel personnel = new MilitaryPersonnel(militaryPersonnelRequest);
-    personnel.setCode(generateCode(militaryPersonnelRequest));
+    personnel.setUnitCode(unit.getUnitCode());
+    personnel.setRegionCode(unit.getRegionCode());
+    personnel.setCode(generateCode(unit.getUnitCode(), militaryPersonnelRequest.getRankCode(),
+        militaryPersonnelRequest.getPositionCode()));
     personnel.setQrCode(generateQrCode(personnel));
 
     MilitaryPersonnel saved = militaryPersonnelRepository.save(personnel);
@@ -79,16 +91,19 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
   public MilitaryPersonnelResponse update(Long id,
                                           MilitaryPersonnelRequest militaryPersonnelRequest) {
     MilitaryPersonnel personnel = findEntityById(id);
+    MilitaryUnit unit = resolveUnitByCode(militaryPersonnelRequest.getUnitCode());
     personnel.setFullName(militaryPersonnelRequest.getFullName());
 
-    boolean shouldRegenerateCode = isPrefixChanged(personnel, militaryPersonnelRequest.getUnitCode(),
+    boolean shouldRegenerateCode = isPrefixChanged(personnel, unit.getUnitCode(),
             militaryPersonnelRequest.getRankCode(), militaryPersonnelRequest.getPositionCode());
+    personnel.setRegionCode(unit.getRegionCode());
     personnel.setRankCode(militaryPersonnelRequest.getRankCode());
-    personnel.setUnitCode(militaryPersonnelRequest.getUnitCode());
+    personnel.setUnitCode(unit.getUnitCode());
     personnel.setPositionCode(militaryPersonnelRequest.getPositionCode());
 
     if (shouldRegenerateCode) {
-      personnel.setCode(generateCode(militaryPersonnelRequest));
+      personnel.setCode(generateCode(unit.getUnitCode(), militaryPersonnelRequest.getRankCode(),
+          militaryPersonnelRequest.getPositionCode()));
     }
     personnel.setImagePath(militaryPersonnelRequest.getImagePath());
     personnel.setQrCode(generateQrCode(personnel));
@@ -148,14 +163,15 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
         .orElseThrow(() -> new AppException(ErrorCode.PERSONNEL_NOT_FOUND));
   }
 
-  private boolean isPrefixChanged(MilitaryPersonnel personnel, String unitName, String rank, String position) {
-    String currentPrefix = buildPrefix(personnel.getUnitCode(), personnel.getRankCode(), personnel.getPositionCode());
-    String newPrefix = buildPrefix(unitName, rank, position);
-    return !currentPrefix.equals(newPrefix);
+  private boolean isPrefixChanged(MilitaryPersonnel personnel, String unitCode, EMilitaryRank rank,
+                                  EMilitaryPosition position) {
+    return !Objects.equals(personnel.getUnitCode(), unitCode)
+        || personnel.getRankCode() != rank
+        || !Objects.equals(personnel.getPositionCode(), position);
   }
 
-  private synchronized String generateCode(MilitaryPersonnelRequest militaryPersonnelRequest) {
-    String prefix = buildPrefix(militaryPersonnelRequest.getUnitCode(), militaryPersonnelRequest.getRankCode(), militaryPersonnelRequest.getPositionCode());
+  private synchronized String generateCode(String unitCode, EMilitaryRank rankCode, EMilitaryPosition positionCode) {
+    String prefix = buildPrefix(unitCode, rankCode, positionCode);
     String searchPrefix = prefix + "-";
     Optional<MilitaryPersonnel> latest = militaryPersonnelRepository
         .findFirstByCodeStartingWithOrderByCodeDesc(searchPrefix);
@@ -182,14 +198,17 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
     return code;
   }
 
-  private String buildPrefix(String unitCode, String rank, String position) {
+  private String buildPrefix(String unitCode, EMilitaryRank rank, EMilitaryPosition position) {
     String unitSegment = sanitizeForCode(unitCode);
-    String rankSegment = sanitizeForCode(rank);
-    String positionSegment = sanitizeForCode(position);
+    String rankSegment = sanitizeForCode(rank == null ? null : rank.getCode());
+    String positionSegment = sanitizeForCode(position == null ? null : position.getCode());
     return unitSegment + "-" + rankSegment + "-" + positionSegment;
   }
 
   private String sanitizeForCode(String value) {
+    if (value == null || value.isBlank()) {
+      throw new AppException(ErrorCode.PERSONNEL_INVALID_INPUT);
+    }
     String normalized = Normalizer.normalize(value, Normalizer.Form.NFD);
     String ascii = NON_ASCII.matcher(normalized).replaceAll("");
     String slug = NON_ALNUM.matcher(ascii).replaceAll("-");
@@ -199,6 +218,11 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
       throw new AppException(ErrorCode.PERSONNEL_INVALID_INPUT);
     }
     return slug.toUpperCase();
+  }
+
+  private MilitaryUnit resolveUnitByCode(String unitCode) {
+    return militaryUnitRepository.findByUnitCodeIgnoreCase(unitCode)
+        .orElseThrow(() -> new AppException(ErrorCode.MILITARY_UNIT_NOT_FOUND));
   }
 
   private String generateQrCode(MilitaryPersonnel personnel) {

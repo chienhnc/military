@@ -1,7 +1,10 @@
 package com.military.payload.request;
 
+import com.military.models.EMilitaryPosition;
+import com.military.models.EMilitaryRank;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -17,24 +20,25 @@ public class MilitaryPersonnelRequest {
     @Size(max = 200)
     private String fullName;
 
-    @Schema(description = "Cap bac", example = "Dai uy")
-    @NotBlank
-    @Size(max = 100)
-    private String rankCode;
+    @Schema(description = "Ma quan khu (tu dong lay theo ma don vi)", example = "QK7")
+    private String regionCode;
 
-    @Schema(description = "Don vi", example = "Su doan 1")
+    @Schema(description = "Cap bac (enum EMilitaryRank)", example = "DAI_UY")
+    @NotNull
+    private EMilitaryRank rankCode;
+
+    @Schema(description = "Ma don vi (bat buoc ton tai trong MilitaryUnit)", example = "DV001")
     @NotBlank
     @Size(max = 150)
     private String unitCode;
 
-    @Schema(description = "Chuc vu", example = "Dai doi truong")
-    @NotBlank
-    @Size(max = 150)
-    private String positionCode;
+    @Schema(description = "Chuc vu (enum EMilitaryPosition)", example = "TRUNG_DOI_TRUONG")
+    @NotNull
+    private EMilitaryPosition positionCode;
 
     @Schema(description = "QR code base64 (he thong tu sinh, bo qua khi tao)", example = "")
     private String qrCode;
 
-    @Schema(description = "Ten file anh da upload qua API /api/personnel/upload-image", example = "e7de9ec1-f08d-4f34-bf6b-5f2f0a73c8ca.jpg")
+    @Schema(description = "Ten file anh da upload qua API /api/common/upload-image?category=personnel", example = "e7de9ec1-f08d-4f34-bf6b-5f2f0a73c8ca.jpg")
     private String imagePath;
 }

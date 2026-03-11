@@ -4,7 +4,6 @@ import com.military.payload.request.MilitaryPersonnelRequest;
 import com.military.payload.response.BaseResponse;
 import com.military.payload.response.MilitaryPersonnelResponse;
 import com.military.service.MilitaryPersonnelService;
-import com.military.service.dto.PersonnelImage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,22 +13,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @Validated
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/personnel")
-@Tag(name = "Military Personnel", description = "API quan ly quan nhan: them, sua, xoa, chi tiet, danh sach, upload anh")
+@Tag(name = "Military Personnel", description = "API quan ly quan nhan: them, sua, xoa, chi tiet, danh sach")
 public class MilitaryPersonnelController {
   private final MilitaryPersonnelService militaryPersonnelService;
 
@@ -50,20 +45,6 @@ public class MilitaryPersonnelController {
   public ResponseEntity<BaseResponse<MilitaryPersonnelResponse>> create(@RequestBody MilitaryPersonnelRequest militaryPersonnelRequest,
                                                                         HttpServletRequest request) {
     MilitaryPersonnelResponse response = militaryPersonnelService.create(militaryPersonnelRequest);
-    return ResponseEntity.ok(BaseResponse.of(200, response, request.getServletPath()));
-  }
-
-  @PostMapping(value = "/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @Operation(
-      summary = "Upload anh quan nhan",
-      description = "Upload file anh va tra ve ten file. Ten file nay duoc gui vao truong imagePath khi tao/sua quan nhan."
-  )
-  @ApiResponse(responseCode = "200", description = "Upload thanh cong")
-  public ResponseEntity<BaseResponse<String>> storeImage(
-      @Parameter(description = "File anh quan nhan", required = true)
-      @RequestParam MultipartFile multipartFile,
-                                                                        HttpServletRequest request) {
-    String response = militaryPersonnelService.storeImage(multipartFile);
     return ResponseEntity.ok(BaseResponse.of(200, response, request.getServletPath()));
   }
 
@@ -130,23 +111,4 @@ public class MilitaryPersonnelController {
     return ResponseEntity.ok(BaseResponse.of(200, response, request.getServletPath()));
   }
 
-  @GetMapping("/images/{filename:.+}")
-  @Operation(
-      summary = "Lay file anh quan nhan",
-      description = "Lay anh theo ten file da upload."
-  )
-  @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "Lay anh thanh cong"),
-      @ApiResponse(responseCode = "404", description = "Khong tim thay anh")
-  })
-  public ResponseEntity<ByteArrayResource> getImage(@PathVariable String filename) {
-    PersonnelImage image = militaryPersonnelService.loadImage(filename);
-    ByteArrayResource resource = new ByteArrayResource(image.content());
-
-    return ResponseEntity.ok()
-        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + image.filename() + "\"")
-        .contentType(MediaType.parseMediaType(image.contentType()))
-        .contentLength(image.content().length)
-        .body(resource);
-  }
 }

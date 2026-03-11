@@ -22,6 +22,12 @@ When prompted, provide:
 - `S3Bucket`: S3 bucket for personnel images
 - `S3Prefix`: folder/prefix in the bucket (default `personnel`)
 
+### Non-interactive deploy (recommended for CI/terminal automation)
+
+```powershell
+.\deploy_lambda.ps1 -JwtSecret "<BASE64_SECRET>" -S3Bucket "<YOUR_BUCKET>" -Region "ap-southeast-1" -StackName "military-manager"
+```
+
 ## 3) Test API
 
 After deploy, SAM outputs `ApiEndpoint`.
