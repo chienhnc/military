@@ -84,7 +84,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
         .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> 
-          auth.requestMatchers("/api/auth/**").permitAll()
+          auth.requestMatchers("/api/auth/signin").permitAll()
               .requestMatchers("/api/common/images/**").permitAll()
               .requestMatchers("/swagger-ui.html").permitAll()
               .requestMatchers("/swagger-ui/**").permitAll()

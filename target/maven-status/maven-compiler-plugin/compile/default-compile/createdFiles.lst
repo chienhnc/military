@@ -4,6 +4,7 @@ com\military\security\jwt\AuthEntryPointJwt.class
 com\military\service\impl\CommonServiceImpl.class
 com\military\payload\response\SubmissionFlowResponse.class
 com\military\payload\request\SignupRequest.class
+com\military\service\impl\AuthServiceImpl$AccessScope.class
 com\military\controllers\SubmissionFlowController.class
 com\military\models\ERole.class
 com\military\repository\dynamodb\DynamoIdGenerator.class

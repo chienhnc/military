@@ -3,6 +3,7 @@ package com.military.service.impl;
 import com.military.exception.AppException;
 import com.military.exception.ErrorCode;
 import com.military.models.ERole;
+import com.military.models.MilitaryUnit;
 import com.military.models.MilitaryPersonnel;
 import com.military.models.Role;
 import com.military.models.User;
@@ -11,6 +12,7 @@ import com.military.payload.request.SignupRequest;
 import com.military.payload.response.MilitaryPersonnelResponse;
 import com.military.payload.response.UserInfoResponse;
 import com.military.repository.MilitaryPersonnelRepository;
+import com.military.repository.MilitaryUnitRepository;
 import com.military.repository.RoleRepository;
 import com.military.repository.UserRepository;
 import com.military.security.jwt.JwtUtils;
@@ -25,8 +27,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,6 +42,7 @@ public class AuthServiceImpl implements AuthService {
   private final PasswordEncoder encoder;
   private final JwtUtils jwtUtils;
   private final MilitaryPersonnelRepository militaryPersonnelRepository;
+  private final MilitaryUnitRepository militaryUnitRepository;
   private final MilitaryPersonnelService militaryPersonnelService;
 
   public AuthServiceImpl(AuthenticationManager authenticationManager,
@@ -46,6 +51,7 @@ public class AuthServiceImpl implements AuthService {
                          PasswordEncoder encoder,
                          JwtUtils jwtUtils,
                          MilitaryPersonnelRepository militaryPersonnelRepository,
+                         MilitaryUnitRepository militaryUnitRepository,
                          MilitaryPersonnelService militaryPersonnelService) {
     this.authenticationManager = authenticationManager;
     this.userRepository = userRepository;
@@ -53,6 +59,7 @@ public class AuthServiceImpl implements AuthService {
     this.encoder = encoder;
     this.jwtUtils = jwtUtils;
     this.militaryPersonnelRepository = militaryPersonnelRepository;
+    this.militaryUnitRepository = militaryUnitRepository;
     this.militaryPersonnelService = militaryPersonnelService;
   }
 
@@ -79,6 +86,10 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public String registerUser(SignupRequest signUpRequest) {
+    AccessScope scope = resolveAccessScope();
+    MilitaryUnit targetUnit = resolveTargetUnit(signUpRequest);
+    authorizeSignup(scope, targetUnit);
+
     if (userRepository.existsByUsername(signUpRequest.getUsername())) {
       throw new AppException(ErrorCode.USERNAME_ALREADY_TAKEN);
     }
@@ -135,5 +146,94 @@ public class AuthServiceImpl implements AuthService {
   private Role findRoleOrThrow(ERole role) {
     return roleRepository.findByName(role)
         .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+  }
+
+  private MilitaryUnit resolveTargetUnit(SignupRequest signUpRequest) {
+    if (signUpRequest.getMilitaryPersonnel() == null || signUpRequest.getMilitaryPersonnel().getUnitCode() == null) {
+      throw new AppException(ErrorCode.MILITARY_UNIT_NOT_FOUND);
+    }
+    return militaryUnitRepository.findByUnitCodeIgnoreCase(signUpRequest.getMilitaryPersonnel().getUnitCode())
+        .orElseThrow(() -> new AppException(ErrorCode.MILITARY_UNIT_NOT_FOUND));
+  }
+
+  private void authorizeSignup(AccessScope scope, MilitaryUnit targetUnit) {
+    if (scope.systemAdmin()) {
+      return;
+    }
+    if (scope.adminRegion()) {
+      if (scope.regionCode() == null || targetUnit.getRegionCode() == null
+          || !scope.regionCode().equalsIgnoreCase(targetUnit.getRegionCode())) {
+        throw new AppException(ErrorCode.UNAUTHORIZED);
+      }
+      return;
+    }
+    if (scope.adminUnit()) {
+      if (scope.unitCode() == null || targetUnit.getUnitCode() == null
+          || !scope.unitCode().equalsIgnoreCase(targetUnit.getUnitCode())) {
+        throw new AppException(ErrorCode.UNAUTHORIZED);
+      }
+      return;
+    }
+    throw new AppException(ErrorCode.UNAUTHORIZED);
+  }
+
+  private AccessScope resolveAccessScope() {
+    if (SecurityContextHolder.getContext().getAuthentication() == null) {
+      throw new AppException(ErrorCode.UNAUTHORIZED);
+    }
+    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    if (!(principal instanceof UserDetailsImpl userDetails)) {
+      throw new AppException(ErrorCode.UNAUTHORIZED);
+    }
+
+    Set<String> roleNames = normalizeRoles(userDetails.getAuthorities());
+    boolean systemAdmin = roleNames.contains("role_system_admin");
+    boolean adminRegion = roleNames.contains("role_admin_region");
+    boolean adminUnit = roleNames.contains("role_admin_unit");
+    boolean userRole = roleNames.contains("role_user");
+
+    if (!systemAdmin && !adminRegion && !adminUnit && !userRole) {
+      throw new AppException(ErrorCode.UNAUTHORIZED);
+    }
+    if (userRole && !systemAdmin && !adminRegion && !adminUnit) {
+      throw new AppException(ErrorCode.UNAUTHORIZED);
+    }
+
+    if (systemAdmin) {
+      return new AccessScope(true, false, false, false, null, null);
+    }
+
+    User actor = userRepository.findById(userDetails.getId())
+        .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
+    Long personnelId = actor.getMilitaryPersonnelId();
+    if (personnelId == null) {
+      throw new AppException(ErrorCode.PERSONNEL_NOT_FOUND);
+    }
+    MilitaryPersonnel personnel = militaryPersonnelRepository.findById(personnelId)
+        .orElseThrow(() -> new AppException(ErrorCode.PERSONNEL_NOT_FOUND));
+
+    String regionCode = personnel.getRegionCode();
+    String unitCode = personnel.getUnitCode();
+
+    if (adminRegion && (regionCode == null || regionCode.isBlank())) {
+      throw new AppException(ErrorCode.PERSONNEL_NOT_FOUND);
+    }
+    if (adminUnit && (unitCode == null || unitCode.isBlank())) {
+      throw new AppException(ErrorCode.PERSONNEL_NOT_FOUND);
+    }
+
+    return new AccessScope(false, adminRegion, adminUnit, userRole, regionCode, unitCode);
+  }
+
+  private Set<String> normalizeRoles(Collection<? extends GrantedAuthority> authorities) {
+    return authorities.stream()
+        .map(GrantedAuthority::getAuthority)
+        .filter(value -> value != null && !value.isBlank())
+        .map(value -> value.toLowerCase(Locale.ROOT))
+        .collect(Collectors.toSet());
+  }
+
+  private record AccessScope(boolean systemAdmin, boolean adminRegion, boolean adminUnit, boolean userRole,
+                             String regionCode, String unitCode) {
   }
 }
