@@ -1,0 +1,44 @@
+package com.military.payload.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
+
+@Schema(description = "Thong tin cap nhat yeu cau nghi phep")
+public class LeaveRequestUpdateRequest {
+  @NotNull
+  @Schema(description = "Ngay bat dau nghi", example = "2026-03-20")
+  private LocalDate leaveFrom;
+
+  @NotNull
+  @Schema(description = "Ngay ket thuc nghi", example = "2026-03-22")
+  private LocalDate leaveTo;
+
+  @Schema(description = "Ly do", example = "Cap nhat ly do")
+  private String reason;
+
+  public LocalDate getLeaveFrom() {
+    return leaveFrom;
+  }
+
+  public void setLeaveFrom(LocalDate leaveFrom) {
+    this.leaveFrom = leaveFrom;
+  }
+
+  public LocalDate getLeaveTo() {
+    return leaveTo;
+  }
+
+  public void setLeaveTo(LocalDate leaveTo) {
+    this.leaveTo = leaveTo;
+  }
+
+  public String getReason() {
+    return reason;
+  }
+
+  public void setReason(String reason) {
+    this.reason = reason;
+  }
+}

@@ -44,7 +44,18 @@ public enum ErrorCode {
   LEAVE_APPROVAL_CONFIG_DUPLICATE_UNIQUE_FIELDS("MIL00033", "error.leave_approval_config.duplicate_unique_fields",
       HttpStatus.BAD_REQUEST),
   LEAVE_APPROVAL_CONFIG_OVERLAPPING_RANGE("MIL00034", "error.leave_approval_config.overlapping_range",
-      HttpStatus.BAD_REQUEST);
+      HttpStatus.BAD_REQUEST),
+  LEAVE_REQUEST_NOT_FOUND("MIL00035", "error.leave_request.not_found", HttpStatus.NOT_FOUND),
+  LEAVE_REQUEST_INVALID_RANGE("MIL00036", "error.leave_request.invalid_range", HttpStatus.BAD_REQUEST),
+  LEAVE_REQUEST_DEFAULT_FLOW_NOT_FOUND("MIL00037", "error.leave_request.default_flow_not_found", HttpStatus.NOT_FOUND),
+  LEAVE_REQUEST_REQUESTER_NOT_IN_FLOW("MIL00038", "error.leave_request.requester_not_in_flow", HttpStatus.BAD_REQUEST),
+  LEAVE_REQUEST_NEXT_ASSIGNEE_NOT_FOUND("MIL00039", "error.leave_request.next_assignee_not_found", HttpStatus.BAD_REQUEST),
+  LEAVE_REQUEST_HISTORY_NOT_FOUND("MIL00040", "error.leave_request.history_not_found", HttpStatus.NOT_FOUND),
+  LEAVE_REQUEST_INVALID_STATE("MIL00041", "error.leave_request.invalid_state", HttpStatus.BAD_REQUEST),
+  LEAVE_REQUEST_FORBIDDEN("MIL00042", "error.leave_request.forbidden", HttpStatus.FORBIDDEN),
+  LEAVE_REQUEST_APPROVAL_LIMIT_EXCEEDED("MIL00043", "error.leave_request.approval_limit_exceeded", HttpStatus.BAD_REQUEST),
+  SUBMISSION_FLOW_CODE_EXISTS("MIL00044", "error.submission_flow.code_exists", HttpStatus.BAD_REQUEST),
+  NO_APPROVE_AUTHORITY("MIL00045", "error.leave_request.no_approve_authority", HttpStatus.FORBIDDEN);
 
   private final String code;
   private final String messageKey;

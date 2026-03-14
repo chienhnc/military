@@ -104,6 +104,30 @@ Resources:
         - AttributeName: id
           KeyType: HASH
 
+  LeaveRequestsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: leave_requests
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  LeaveRequestHistoriesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: leave_request_histories
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
   MilitaryHttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -140,6 +164,8 @@ Resources:
                 - !GetAtt UnitsTable.Arn
                 - !GetAtt SubmissionGroupsTable.Arn
                 - !GetAtt SubmissionFlowsTable.Arn
+                - !GetAtt LeaveRequestsTable.Arn
+                - !GetAtt LeaveRequestHistoriesTable.Arn
                 - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${LeaveApprovalConfigsTableName}
       Environment:
         Variables:
@@ -154,6 +180,8 @@ Resources:
           DYNAMODB_SUBMISSION_GROUPS_TABLE: !Ref SubmissionGroupsTable
           DYNAMODB_SUBMISSION_FLOWS_TABLE: !Ref SubmissionFlowsTable
           DYNAMODB_LEAVE_APPROVAL_CONFIGS_TABLE: !Ref LeaveApprovalConfigsTableName
+          DYNAMODB_LEAVE_REQUESTS_TABLE: !Ref LeaveRequestsTable
+          DYNAMODB_LEAVE_REQUEST_HISTORIES_TABLE: !Ref LeaveRequestHistoriesTable
       Events:
         RootApi:
           Type: HttpApi

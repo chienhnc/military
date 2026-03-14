@@ -20,4 +20,6 @@ public interface SubmissionFlowRepository {
   Page<SubmissionFlow> findByNameContainingIgnoreCase(String nameKeyword, Pageable pageable);
 
   boolean existsByGroupId(Long groupId);
+
+  boolean existsByCodeIgnoreCase(String code, Long excludeId);
 }

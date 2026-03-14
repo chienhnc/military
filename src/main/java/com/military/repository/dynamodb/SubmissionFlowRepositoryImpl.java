@@ -87,6 +87,16 @@ public class SubmissionFlowRepositoryImpl implements SubmissionFlowRepository {
             && item.getGroups().stream().anyMatch(group -> groupId.equals(group.getGroupId())));
   }
 
+  @Override
+  public boolean existsByCodeIgnoreCase(String code, Long excludeId) {
+    if (code == null || code.isBlank()) {
+      return false;
+    }
+    return table.scan().items().stream()
+        .filter(item -> excludeId == null || !excludeId.equals(item.getId()))
+        .anyMatch(item -> item.getCode() != null && item.getCode().equalsIgnoreCase(code.trim()));
+  }
+
   private boolean containsIgnoreCase(String value, String keywordLower) {
     if (value == null || keywordLower == null || keywordLower.isBlank()) {
       return false;
@@ -116,6 +126,7 @@ public class SubmissionFlowRepositoryImpl implements SubmissionFlowRepository {
   private SubmissionFlowItem toItem(SubmissionFlow model) {
     SubmissionFlowItem item = new SubmissionFlowItem();
     item.setId(model.getId());
+    item.setCode(model.getCode());
     item.setName(model.getName());
     item.setDescription(model.getDescription());
     item.setGroups(model.getGroups() == null ? new ArrayList<>() : model.getGroups().stream()
@@ -134,6 +145,7 @@ public class SubmissionFlowRepositoryImpl implements SubmissionFlowRepository {
   private SubmissionFlow toModel(SubmissionFlowItem item) {
     SubmissionFlow model = new SubmissionFlow();
     model.setId(item.getId());
+    model.setCode(item.getCode());
     model.setName(item.getName());
     model.setDescription(item.getDescription());
     model.setGroups(item.getGroups() == null ? new ArrayList<>() : item.getGroups().stream()

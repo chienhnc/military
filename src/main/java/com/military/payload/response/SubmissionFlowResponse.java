@@ -12,6 +12,7 @@ import java.util.List;
 @Data
 public class SubmissionFlowResponse {
   private Long id;
+  private String code;
   private String name;
   private String description;
   private List<SubmissionFlowGroupResponse> groups = new ArrayList<>();

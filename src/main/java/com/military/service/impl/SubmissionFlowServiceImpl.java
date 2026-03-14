@@ -32,7 +32,9 @@ public class SubmissionFlowServiceImpl implements SubmissionFlowService {
 
   @Override
   public SubmissionFlowResponse create(SubmissionFlowRequest request) {
+    validateCodeUnique(request.getCode(), null);
     SubmissionFlow flow = new SubmissionFlow();
+    flow.setCode(request.getCode().trim());
     flow.setName(request.getName());
     flow.setDescription(request.getDescription());
     flow.setGroups(validateAndBuildGroups(request.getGroups()));
@@ -41,7 +43,9 @@ public class SubmissionFlowServiceImpl implements SubmissionFlowService {
 
   @Override
   public SubmissionFlowResponse update(Long id, SubmissionFlowRequest request) {
+    validateCodeUnique(request.getCode(), id);
     SubmissionFlow flow = findEntityById(id);
+    flow.setCode(request.getCode().trim());
     flow.setName(request.getName());
     flow.setDescription(request.getDescription());
     flow.setGroups(validateAndBuildGroups(request.getGroups()));
@@ -109,5 +113,14 @@ public class SubmissionFlowServiceImpl implements SubmissionFlowService {
 
   private SubmissionFlowResponse toResponse(SubmissionFlow flow) {
     return new SubmissionFlowResponse(flow);
+  }
+
+  private void validateCodeUnique(String code, Long excludeId) {
+    if (code == null || code.trim().isEmpty()) {
+      throw new AppException(ErrorCode.VALIDATION_FAILED);
+    }
+    if (submissionFlowRepository.existsByCodeIgnoreCase(code.trim(), excludeId)) {
+      throw new AppException(ErrorCode.SUBMISSION_FLOW_CODE_EXISTS);
+    }
   }
 }

@@ -12,6 +12,11 @@ import java.util.List;
 @Data
 @Schema(description = "Thong tin luong trinh")
 public class SubmissionFlowRequest {
+  @Schema(description = "Ma luong trinh, dung de phan biet nghiep vu", example = "LEAVE_REQUEST_FLOW")
+  @NotBlank
+  @Size(max = 100)
+  private String code;
+
   @Schema(description = "Ten luong trinh", example = "Luong trinh phe duyet cap don vi")
   @NotBlank
   @Size(max = 255)
