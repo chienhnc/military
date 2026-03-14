@@ -1,0 +1,24 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::military-images-343540011407-ap-southeast-2/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:DeleteItem", "dynamodb:Scan"],
+      "Resource": [
+        "arn:aws:dynamodb:ap-southeast-2:343540011407:table/users",
+        "arn:aws:dynamodb:ap-southeast-2:343540011407:table/roles",
+        "arn:aws:dynamodb:ap-southeast-2:343540011407:table/military_personnel",
+        "arn:aws:dynamodb:ap-southeast-2:343540011407:table/military_regions",
+        "arn:aws:dynamodb:ap-southeast-2:343540011407:table/military_units",
+        "arn:aws:dynamodb:ap-southeast-2:343540011407:table/submission_groups",
+        "arn:aws:dynamodb:ap-southeast-2:343540011407:table/submission_flows",
+        "arn:aws:dynamodb:ap-southeast-2:343540011407:table/leave_approval_configs"
+      ]
+    }
+  ]
+}

@@ -101,6 +101,38 @@ public class LeaveApprovalConfigRepositoryImpl implements LeaveApprovalConfigRep
         .findFirst();
   }
 
+  @Override
+  public boolean existsByUniqueFields(EMilitaryPosition militaryPosition,
+                                      LocalDate effectiveFrom,
+                                      LocalDate effectiveTo,
+                                      Long excludeId) {
+    if (militaryPosition == null || effectiveFrom == null || effectiveTo == null) {
+      return false;
+    }
+    return table.scan().items().stream()
+        .map(this::toModel)
+        .filter(item -> excludeId == null || !excludeId.equals(item.getId()))
+        .anyMatch(item -> item.getMilitaryPosition() == militaryPosition
+            && effectiveFrom.equals(item.getEffectiveFrom())
+            && effectiveTo.equals(item.getEffectiveTo()));
+  }
+
+  @Override
+  public boolean existsOverlappingRange(EMilitaryPosition militaryPosition,
+                                        LocalDate effectiveFrom,
+                                        LocalDate effectiveTo,
+                                        Long excludeId) {
+    if (militaryPosition == null || effectiveFrom == null || effectiveTo == null) {
+      return false;
+    }
+    return table.scan().items().stream()
+        .map(this::toModel)
+        .filter(item -> excludeId == null || !excludeId.equals(item.getId()))
+        .filter(item -> item.getMilitaryPosition() == militaryPosition)
+        .filter(item -> item.getEffectiveFrom() != null && item.getEffectiveTo() != null)
+        .anyMatch(item -> !effectiveFrom.isAfter(item.getEffectiveTo()) && !effectiveTo.isBefore(item.getEffectiveFrom()));
+  }
+
   private Comparator<LeaveApprovalConfig> byLatestFirst() {
     return Comparator.comparing(LeaveApprovalConfig::getEffectiveFrom, Comparator.nullsLast(LocalDate::compareTo))
         .thenComparing(LeaveApprovalConfig::getId, Comparator.nullsLast(Long::compareTo))

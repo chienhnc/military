@@ -25,6 +25,8 @@ public class LeaveApprovalConfigServiceImpl implements LeaveApprovalConfigServic
   @Override
   public LeaveApprovalConfigResponse create(LeaveApprovalConfigRequest request) {
     validateRequest(request);
+    validateUnique(request, null);
+    validateNoOverlap(request, null);
     LeaveApprovalConfig config = new LeaveApprovalConfig(request);
     return toResponse(leaveApprovalConfigRepository.save(config));
   }
@@ -32,6 +34,8 @@ public class LeaveApprovalConfigServiceImpl implements LeaveApprovalConfigServic
   @Override
   public LeaveApprovalConfigResponse update(Long id, LeaveApprovalConfigRequest request) {
     validateRequest(request);
+    validateUnique(request, id);
+    validateNoOverlap(request, id);
     LeaveApprovalConfig config = findEntityById(id);
     config.setMilitaryPosition(request.getMilitaryPosition());
     config.setMaxApprovalDays(request.getMaxApprovalDays());
@@ -91,6 +95,22 @@ public class LeaveApprovalConfigServiceImpl implements LeaveApprovalConfigServic
         && request.getEffectiveTo() != null
         && request.getEffectiveFrom().isAfter(request.getEffectiveTo())) {
       throw new AppException(ErrorCode.LEAVE_APPROVAL_CONFIG_INVALID_EFFECTIVE_RANGE);
+    }
+  }
+
+  private void validateUnique(LeaveApprovalConfigRequest request, Long excludeId) {
+    boolean exists = leaveApprovalConfigRepository.existsByUniqueFields(
+        request.getMilitaryPosition(), request.getEffectiveFrom(), request.getEffectiveTo(), excludeId);
+    if (exists) {
+      throw new AppException(ErrorCode.LEAVE_APPROVAL_CONFIG_DUPLICATE_UNIQUE_FIELDS);
+    }
+  }
+
+  private void validateNoOverlap(LeaveApprovalConfigRequest request, Long excludeId) {
+    boolean overlaps = leaveApprovalConfigRepository.existsOverlappingRange(
+        request.getMilitaryPosition(), request.getEffectiveFrom(), request.getEffectiveTo(), excludeId);
+    if (overlaps) {
+      throw new AppException(ErrorCode.LEAVE_APPROVAL_CONFIG_OVERLAPPING_RANGE);
     }
   }
 

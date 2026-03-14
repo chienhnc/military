@@ -40,6 +40,10 @@ public enum ErrorCode {
       HttpStatus.BAD_REQUEST),
   LEAVE_APPROVAL_CONFIG_INVALID_ACTIVE("MIL00031", "error.leave_approval_config.invalid_active", HttpStatus.BAD_REQUEST),
   LEAVE_APPROVAL_CONFIG_INVALID_APPLICABLE_QUERY("MIL00032", "error.leave_approval_config.invalid_applicable_query",
+      HttpStatus.BAD_REQUEST),
+  LEAVE_APPROVAL_CONFIG_DUPLICATE_UNIQUE_FIELDS("MIL00033", "error.leave_approval_config.duplicate_unique_fields",
+      HttpStatus.BAD_REQUEST),
+  LEAVE_APPROVAL_CONFIG_OVERLAPPING_RANGE("MIL00034", "error.leave_approval_config.overlapping_range",
       HttpStatus.BAD_REQUEST);
 
   private final String code;

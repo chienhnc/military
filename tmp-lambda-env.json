@@ -1,0 +1,15 @@
+{
+    "Variables":  {
+                      "DYNAMODB_USERS_TABLE":  "users",
+                      "DYNAMODB_SUBMISSION_GROUPS_TABLE":  "submission_groups",
+                      "DYNAMODB_LEAVE_APPROVAL_CONFIGS_TABLE":  "leave_approval_configs",
+                      "S3_PREFIX":  "personnel",
+                      "DYNAMODB_PERSONNEL_TABLE":  "military_personnel",
+                      "DYNAMODB_ROLES_TABLE":  "roles",
+                      "DYNAMODB_REGIONS_TABLE":  "military_regions",
+                      "DYNAMODB_SUBMISSION_FLOWS_TABLE":  "submission_flows",
+                      "S3_BUCKET":  "military-images-343540011407-ap-southeast-2",
+                      "JWT_SECRET":  "/HH61zWLTfizmmPhFdj9UiRoRP/T2Ou9otin8E95eoRK9Qt4uom1RuG64U48iLglsOTDPN+lOdMEQ1O0MVnejw==",
+                      "DYNAMODB_UNITS_TABLE":  "military_units"
+                  }
+}

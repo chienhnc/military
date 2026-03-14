@@ -14,6 +14,10 @@ Parameters:
     Type: String
     Default: personnel
     Description: S3 prefix/folder for personnel images
+  LeaveApprovalConfigsTableName:
+    Type: String
+    Default: leave_approval_configs
+    Description: Existing DynamoDB table name for leave approval configs
 
 Resources:
   UsersTable:
@@ -100,18 +104,6 @@ Resources:
         - AttributeName: id
           KeyType: HASH
 
-  LeaveApprovalConfigsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: leave_approval_configs
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: N
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-
   MilitaryHttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -148,7 +140,7 @@ Resources:
                 - !GetAtt UnitsTable.Arn
                 - !GetAtt SubmissionGroupsTable.Arn
                 - !GetAtt SubmissionFlowsTable.Arn
-                - !GetAtt LeaveApprovalConfigsTable.Arn
+                - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${LeaveApprovalConfigsTableName}
       Environment:
         Variables:
           JWT_SECRET: !Ref JwtSecret
@@ -161,7 +153,7 @@ Resources:
           DYNAMODB_UNITS_TABLE: !Ref UnitsTable
           DYNAMODB_SUBMISSION_GROUPS_TABLE: !Ref SubmissionGroupsTable
           DYNAMODB_SUBMISSION_FLOWS_TABLE: !Ref SubmissionFlowsTable
-          DYNAMODB_LEAVE_APPROVAL_CONFIGS_TABLE: !Ref LeaveApprovalConfigsTable
+          DYNAMODB_LEAVE_APPROVAL_CONFIGS_TABLE: !Ref LeaveApprovalConfigsTableName
       Events:
         RootApi:
           Type: HttpApi

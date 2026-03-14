@@ -26,4 +26,14 @@ public interface LeaveApprovalConfigRepository {
                                           Pageable pageable);
 
   Optional<LeaveApprovalConfig> findApplicable(EMilitaryPosition militaryPosition, LocalDate applyDate);
+
+  boolean existsByUniqueFields(EMilitaryPosition militaryPosition,
+                               LocalDate effectiveFrom,
+                               LocalDate effectiveTo,
+                               Long excludeId);
+
+  boolean existsOverlappingRange(EMilitaryPosition militaryPosition,
+                                 LocalDate effectiveFrom,
+                                 LocalDate effectiveTo,
+                                 Long excludeId);
 }
