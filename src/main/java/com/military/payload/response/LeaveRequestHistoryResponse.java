@@ -21,6 +21,8 @@ public class LeaveRequestHistoryResponse {
   private Long flowId;
   private Integer orderNo;
   private String reason;
+  private Integer allowedOutCount;
+  private Integer usedOutCount;
 
   public LeaveRequestHistoryResponse(LeaveRequestHistory history) {
     BeanUtils.copyProperties(history, this);

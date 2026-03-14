@@ -21,4 +21,6 @@ public class LeaveRequestHistory {
   private Long flowId;
   private Integer orderNo;
   private String reason;
+  private Integer allowedOutCount;
+  private Integer usedOutCount;
 }

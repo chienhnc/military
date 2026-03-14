@@ -81,6 +81,8 @@ public class LeaveRequestHistoryRepositoryImpl implements LeaveRequestHistoryRep
     item.setFlowId(model.getFlowId());
     item.setOrderNo(model.getOrderNo());
     item.setReason(model.getReason());
+    item.setAllowedOutCount(model.getAllowedOutCount());
+    item.setUsedOutCount(model.getUsedOutCount());
     return item;
   }
 
@@ -99,6 +101,8 @@ public class LeaveRequestHistoryRepositoryImpl implements LeaveRequestHistoryRep
     model.setFlowId(item.getFlowId());
     model.setOrderNo(item.getOrderNo());
     model.setReason(item.getReason());
+    model.setAllowedOutCount(item.getAllowedOutCount());
+    model.setUsedOutCount(item.getUsedOutCount());
     return model;
   }
 

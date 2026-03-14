@@ -20,6 +20,8 @@ public class LeaveRequestHistoryItem {
   private Long flowId;
   private Integer orderNo;
   private String reason;
+  private Integer allowedOutCount;
+  private Integer usedOutCount;
 
   @DynamoDbPartitionKey
   public Long getId() {
@@ -124,5 +126,21 @@ public class LeaveRequestHistoryItem {
 
   public void setReason(String reason) {
     this.reason = reason;
+  }
+
+  public Integer getAllowedOutCount() {
+    return allowedOutCount;
+  }
+
+  public void setAllowedOutCount(Integer allowedOutCount) {
+    this.allowedOutCount = allowedOutCount;
+  }
+
+  public Integer getUsedOutCount() {
+    return usedOutCount;
+  }
+
+  public void setUsedOutCount(Integer usedOutCount) {
+    this.usedOutCount = usedOutCount;
   }
 }

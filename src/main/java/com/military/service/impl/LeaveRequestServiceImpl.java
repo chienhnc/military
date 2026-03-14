@@ -89,6 +89,8 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     leaveRequest.setCurrentAssignee(nextAssignee.username());
     leaveRequest.setStatus(ELeaveRequestStatus.CHUA_XU_LY);
     leaveRequest.setReason(request.getReason());
+    leaveRequest.setAllowedOutCount(request.getAllowedOutCount());
+    leaveRequest.setUsedOutCount(null);
     LeaveRequest saved = leaveRequestRepository.save(leaveRequest);
 
     leaveRequestHistoryRepository.save(buildHistory(saved, requesterRound, currentUser.personnel().getId(),
@@ -230,6 +232,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     leaveRequest.setLeaveFrom(request.getLeaveFrom());
     leaveRequest.setLeaveTo(request.getLeaveTo());
     leaveRequest.setReason(request.getReason());
+    leaveRequest.setAllowedOutCount(request.getAllowedOutCount());
     leaveRequest.setStatus(ELeaveRequestStatus.MO_YEU_CAU);
     leaveRequest.setCurrentAssignee(currentUser.user().getUsername());
     return toResponse(leaveRequestRepository.save(leaveRequest));
@@ -523,6 +526,8 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     history.setFlowId(flowId);
     history.setOrderNo(orderNo);
     history.setReason(reason);
+    history.setAllowedOutCount(leaveRequest.getAllowedOutCount());
+    history.setUsedOutCount(leaveRequest.getUsedOutCount());
     return history;
   }
 

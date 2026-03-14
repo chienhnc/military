@@ -1,3 +1,4 @@
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\models\QrScanLog.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\request\LeaveRequestUpdateRequest.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\response\MessageResponse.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\security\services\UserDetailsImpl.java
@@ -8,6 +9,7 @@ C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\response
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\response\LeaveRequestResponse.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\exception\AppException.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynamodb\MilitaryUnitRepositoryImpl.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\QrScanLogRepository.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\models\MilitaryRegion.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\exception\ErrorCode.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\CommonService.java
@@ -56,6 +58,7 @@ C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\LeaveReq
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\Main.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\request\SubmissionGroupUsersRequest.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\AuthService.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\models\EQrScanStatus.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\models\ERole.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\config\OpenApiConfig.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynamodb\UserRepositoryImpl.java
@@ -70,11 +73,16 @@ C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\Military
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\request\SubmissionFlowGroupRequest.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\impl\SubmissionGroupServiceImpl.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\request\SignupRequest.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\request\QrScanDecisionRequest.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynamodb\item\QrScanLogItem.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\LeaveRequestHistoryRepository.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynamodb\DynamoIdGenerator.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\MilitaryUnitRepository.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynamodb\QrScanLogRepositoryImpl.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\request\QrCitizenDataRequest.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\response\MilitaryRegionResponse.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynamodb\RoleRepositoryImpl.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\QrScanLogService.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\LeaveApprovalConfigRepository.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\SubmissionFlowService.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\security\jwt\AuthEntryPointJwt.java
@@ -84,6 +92,8 @@ C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\config\DynamoDbC
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\request\SubmissionFlowRequest.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\impl\MilitaryRegionServiceImpl.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\response\LeaveApprovalCapabilityResponse.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\models\EQrScanType.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\request\QrMilitaryPersonnelDataRequest.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\controllers\AuthController.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\models\SubmissionFlowGroup.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\security\services\UserDetailsServiceImpl.java
@@ -91,6 +101,7 @@ C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\exception\Global
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynamodb\item\LeaveApprovalConfigItem.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynamodb\item\LeaveRequestItem.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\models\ELeaveRequestStatus.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\controllers\QrScanLogController.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\models\LeaveApprovalConfig.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\response\SubmissionGroupResponse.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\models\EQrSource.java
@@ -100,6 +111,7 @@ C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\security\WebSecu
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\impl\CommonServiceImpl.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\dto\RegionLogo.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\models\User.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\response\QrScanLogResponse.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynamodb\item\UserItem.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynamodb\MilitaryRegionRepositoryImpl.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\models\Role.java
@@ -112,10 +124,12 @@ C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynam
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\dto\CommonImage.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynamodb\SubmissionGroupRepositoryImpl.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\impl\SubmissionFlowServiceImpl.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\request\QrScanRequest.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\response\ErrorDetail.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\request\LeaveApprovalConfigRequest.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\dynamodb\MilitaryPersonnelRepositoryImpl.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\StreamLambdaHandler.java
+C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\service\impl\QrScanLogServiceImpl.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\request\MilitaryPersonnelRequest.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\payload\response\UserInfoResponse.java
 C:\Users\Admin\IdeaProjects\military\src\main\java\com\military\repository\LeaveRequestRepository.java

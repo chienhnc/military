@@ -90,6 +90,8 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
     item.setCurrentRound(model.getCurrentRound());
     item.setCurrentAssignee(model.getCurrentAssignee());
     item.setReason(model.getReason());
+    item.setAllowedOutCount(model.getAllowedOutCount());
+    item.setUsedOutCount(model.getUsedOutCount());
     return item;
   }
 
@@ -107,6 +109,8 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
     model.setCurrentRound(item.getCurrentRound());
     model.setCurrentAssignee(item.getCurrentAssignee());
     model.setReason(item.getReason());
+    model.setAllowedOutCount(item.getAllowedOutCount());
+    model.setUsedOutCount(item.getUsedOutCount());
     return model;
   }
 

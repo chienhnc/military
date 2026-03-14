@@ -20,6 +20,8 @@ public class LeaveRequestResponse {
   private String currentRound;
   private String currentAssignee;
   private String reason;
+  private Integer allowedOutCount;
+  private Integer usedOutCount;
 
   public LeaveRequestResponse(LeaveRequest leaveRequest) {
     BeanUtils.copyProperties(leaveRequest, this);

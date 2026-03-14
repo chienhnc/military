@@ -55,7 +55,11 @@ public enum ErrorCode {
   LEAVE_REQUEST_FORBIDDEN("MIL00042", "error.leave_request.forbidden", HttpStatus.FORBIDDEN),
   LEAVE_REQUEST_APPROVAL_LIMIT_EXCEEDED("MIL00043", "error.leave_request.approval_limit_exceeded", HttpStatus.BAD_REQUEST),
   SUBMISSION_FLOW_CODE_EXISTS("MIL00044", "error.submission_flow.code_exists", HttpStatus.BAD_REQUEST),
-  NO_APPROVE_AUTHORITY("MIL00045", "error.leave_request.no_approve_authority", HttpStatus.FORBIDDEN);
+  NO_APPROVE_AUTHORITY("MIL00045", "error.leave_request.no_approve_authority", HttpStatus.FORBIDDEN),
+  QR_SCAN_INVALID_PAYLOAD("MIL00046", "error.qr_scan.invalid_payload", HttpStatus.BAD_REQUEST),
+  QR_SCAN_LOG_NOT_FOUND("MIL00047", "error.qr_scan.log_not_found", HttpStatus.NOT_FOUND),
+  QR_SCAN_INVALID_STATE("MIL00048", "error.qr_scan.invalid_state", HttpStatus.BAD_REQUEST),
+  QR_SCAN_CITIZEN_ACTION_ONLY("MIL00049", "error.qr_scan.citizen_action_only", HttpStatus.BAD_REQUEST);
 
   private final String code;
   private final String messageKey;
