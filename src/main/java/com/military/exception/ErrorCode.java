@@ -34,7 +34,13 @@ public enum ErrorCode {
   SUBMISSION_FLOW_USER_NOT_FOUND("MIL00025", "error.submission_flow.user_not_found", HttpStatus.BAD_REQUEST),
   SUBMISSION_GROUP_NOT_FOUND("MIL00026", "error.submission_group.not_found", HttpStatus.NOT_FOUND),
   SUBMISSION_GROUP_IN_USE("MIL00027", "error.submission_group.in_use", HttpStatus.BAD_REQUEST),
-  SUBMISSION_GROUP_INVALID_USERS("MIL00028", "error.submission_group.invalid_users", HttpStatus.BAD_REQUEST);
+  SUBMISSION_GROUP_INVALID_USERS("MIL00028", "error.submission_group.invalid_users", HttpStatus.BAD_REQUEST),
+  LEAVE_APPROVAL_CONFIG_NOT_FOUND("MIL00029", "error.leave_approval_config.not_found", HttpStatus.NOT_FOUND),
+  LEAVE_APPROVAL_CONFIG_INVALID_EFFECTIVE_RANGE("MIL00030", "error.leave_approval_config.invalid_effective_range",
+      HttpStatus.BAD_REQUEST),
+  LEAVE_APPROVAL_CONFIG_INVALID_ACTIVE("MIL00031", "error.leave_approval_config.invalid_active", HttpStatus.BAD_REQUEST),
+  LEAVE_APPROVAL_CONFIG_INVALID_APPLICABLE_QUERY("MIL00032", "error.leave_approval_config.invalid_applicable_query",
+      HttpStatus.BAD_REQUEST);
 
   private final String code;
   private final String messageKey;
