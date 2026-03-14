@@ -35,7 +35,7 @@ public class MilitaryPersonnelController {
   @PostMapping()
   @Operation(
       summary = "Them quan nhan",
-      description = "Tao moi quan nhan, he thong tu sinh code dinh dang DONVI-CAPBAC-CHUCVU-00001 va QR code."
+      description = "Tao moi quan nhan, he thong tu sinh code dinh dang REGION|DONVI|CAPBAC|CHUCVU|00001 va QR code."
   )
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "Tao thanh cong"),

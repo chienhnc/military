@@ -13,6 +13,7 @@ public class MilitaryPersonnelItem {
   private String unitCode;
   private String positionCode;
   private String qrCode;
+  private String qrSource;
   private String imagePath;
 
   @DynamoDbPartitionKey
@@ -78,6 +79,14 @@ public class MilitaryPersonnelItem {
 
   public void setQrCode(String qrCode) {
     this.qrCode = qrCode;
+  }
+
+  public String getQrSource() {
+    return qrSource;
+  }
+
+  public void setQrSource(String qrSource) {
+    this.qrSource = qrSource;
   }
 
   public String getImagePath() {

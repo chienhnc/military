@@ -2,6 +2,7 @@ package com.military.payload.response;
 
 import com.military.models.EMilitaryPosition;
 import com.military.models.EMilitaryRank;
+import com.military.models.EQrSource;
 import com.military.models.MilitaryPersonnel;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -16,6 +17,7 @@ public class MilitaryPersonnelResponse {
   private EMilitaryPosition positionCode;
   private String code;
   private String qrCode;
+  private EQrSource qrSource;
   private String imageUrl;
 
   public MilitaryPersonnelResponse(MilitaryPersonnel militaryPersonnel) {

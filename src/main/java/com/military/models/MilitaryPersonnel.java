@@ -16,6 +16,7 @@ public class MilitaryPersonnel {
   private String unitCode;
   private EMilitaryPosition positionCode;
   private String qrCode;
+  private EQrSource qrSource;
   private String imagePath;
 
   public MilitaryPersonnel(MilitaryPersonnelRequest militaryPersonnelRequest) {

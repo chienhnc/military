@@ -36,7 +36,7 @@ public class MilitaryPersonnelRequest {
     @NotNull
     private EMilitaryPosition positionCode;
 
-    @Schema(description = "QR code base64 (he thong tu sinh, bo qua khi tao)", example = "")
+    @Schema(description = "QR code base64 (he thong tu sinh, bo qua khi tao/sua)", example = "")
     private String qrCode;
 
     @Schema(description = "Ten file anh da upload qua API /api/common/upload-image?category=personnel", example = "e7de9ec1-f08d-4f34-bf6b-5f2f0a73c8ca.jpg")

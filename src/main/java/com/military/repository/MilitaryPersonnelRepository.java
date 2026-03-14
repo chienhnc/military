@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -24,4 +25,6 @@ public interface MilitaryPersonnelRepository {
   Page<MilitaryPersonnel> findByFullNameContainingIgnoreCaseOrCodeContainingIgnoreCase(String fullNameKeyword,
                                                                                                  String codeKeyword,
                                                                                                  Pageable pageable);
+
+  List<MilitaryPersonnel> findAllList();
 }

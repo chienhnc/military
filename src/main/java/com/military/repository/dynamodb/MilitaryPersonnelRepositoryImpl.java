@@ -2,6 +2,7 @@ package com.military.repository.dynamodb;
 
 import com.military.models.EMilitaryPosition;
 import com.military.models.EMilitaryRank;
+import com.military.models.EQrSource;
 import com.military.models.MilitaryPersonnel;
 import com.military.repository.MilitaryPersonnelRepository;
 import com.military.repository.dynamodb.item.MilitaryPersonnelItem;
@@ -98,6 +99,14 @@ public class MilitaryPersonnelRepositoryImpl implements MilitaryPersonnelReposit
     return paginate(data, pageable);
   }
 
+  @Override
+  public List<MilitaryPersonnel> findAllList() {
+    return table.scan().items().stream()
+        .map(this::toModel)
+        .sorted(Comparator.comparing(MilitaryPersonnel::getId, Comparator.nullsLast(Long::compareTo)).reversed())
+        .collect(Collectors.toList());
+  }
+
   private boolean containsIgnoreCase(String value, String keywordLower) {
     if (value == null || keywordLower == null || keywordLower.isBlank()) {
       return false;
@@ -134,6 +143,7 @@ public class MilitaryPersonnelRepositoryImpl implements MilitaryPersonnelReposit
     item.setUnitCode(model.getUnitCode());
     item.setPositionCode(model.getPositionCode() == null ? null : model.getPositionCode().name());
     item.setQrCode(model.getQrCode());
+    item.setQrSource(model.getQrSource() == null ? null : model.getQrSource().name());
     item.setImagePath(model.getImagePath());
     return item;
   }
@@ -148,6 +158,7 @@ public class MilitaryPersonnelRepositoryImpl implements MilitaryPersonnelReposit
     model.setUnitCode(item.getUnitCode());
     model.setPositionCode(parsePosition(item.getPositionCode()));
     model.setQrCode(item.getQrCode());
+    model.setQrSource(parseQrSource(item.getQrSource()));
     model.setImagePath(item.getImagePath());
     return model;
   }
@@ -169,6 +180,17 @@ public class MilitaryPersonnelRepositoryImpl implements MilitaryPersonnelReposit
     }
     try {
       return EMilitaryPosition.valueOf(positionCode);
+    } catch (IllegalArgumentException ex) {
+      return null;
+    }
+  }
+
+  private EQrSource parseQrSource(String qrSource) {
+    if (qrSource == null || qrSource.isBlank()) {
+      return null;
+    }
+    try {
+      return EQrSource.valueOf(qrSource);
     } catch (IllegalArgumentException ex) {
       return null;
     }

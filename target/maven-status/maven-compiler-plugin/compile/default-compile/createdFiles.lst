@@ -64,6 +64,7 @@ com\military\controllers\MilitaryPersonnelController.class
 com\military\controllers\MilitaryRegionController.class
 com\military\service\MilitaryRegionService.class
 com\military\controllers\LeaveApprovalConfigController.class
+com\military\service\impl\MilitaryPersonnelServiceImpl$AccessScope.class
 com\military\models\User.class
 com\military\payload\request\LoginRequest.class
 com\military\controllers\MilitaryUnitController.class
@@ -88,6 +89,7 @@ com\military\repository\dynamodb\item\RoleItem.class
 com\military\service\SubmissionFlowService.class
 com\military\service\impl\AuthServiceImpl.class
 com\military\service\impl\MilitaryRegionServiceImpl.class
+com\military\models\EQrSource.class
 com\military\payload\request\MilitaryRegionRequest.class
 com\military\payload\response\SubmissionFlowGroupResponse.class
 com\military\service\impl\MilitaryUnitServiceImpl.class
