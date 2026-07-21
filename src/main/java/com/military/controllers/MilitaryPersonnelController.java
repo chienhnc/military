@@ -21,7 +21,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Validated
-@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/personnel")
 @Tag(name = "Military Personnel", description = "API quan ly quan nhan: them, sua, xoa, chi tiet, danh sach")
