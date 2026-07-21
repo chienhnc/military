@@ -68,6 +68,18 @@ Resources:
         - AttributeName: id
           KeyType: HASH
 
+  VehiclesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: military_vehicles
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
   SubmissionGroupsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -161,6 +173,7 @@ Resources:
                 - !GetAtt RolesTable.Arn
                 - !GetAtt PersonnelTable.Arn
                 - !GetAtt UnitsTable.Arn
+                - !GetAtt VehiclesTable.Arn
                 - !GetAtt SubmissionGroupsTable.Arn
                 - !GetAtt SubmissionFlowsTable.Arn
                 - !GetAtt LeaveRequestsTable.Arn
@@ -176,6 +189,7 @@ Resources:
           DYNAMODB_ROLES_TABLE: !Ref RolesTable
           DYNAMODB_PERSONNEL_TABLE: !Ref PersonnelTable
           DYNAMODB_UNITS_TABLE: !Ref UnitsTable
+          DYNAMODB_VEHICLES_TABLE: !Ref VehiclesTable
           DYNAMODB_SUBMISSION_GROUPS_TABLE: !Ref SubmissionGroupsTable
           DYNAMODB_SUBMISSION_FLOWS_TABLE: !Ref SubmissionFlowsTable
           DYNAMODB_LEAVE_APPROVAL_CONFIGS_TABLE: !Ref LeaveApprovalConfigsTableName

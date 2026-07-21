@@ -15,9 +15,11 @@ import com.military.security.services.UserDetailsImpl;
 import com.military.service.CommonService;
 import com.military.service.MilitaryPersonnelService;
 import com.military.service.MilitaryUnitService;
+import com.military.service.VehicleService;
 import com.military.service.dto.CommonImage;
 import com.military.service.dto.PersonnelImage;
 import com.military.service.dto.UnitLogo;
+import com.military.service.dto.VehicleImage;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -34,20 +36,24 @@ import java.util.stream.Collectors;
 public class CommonServiceImpl implements CommonService {
   private static final String CATEGORY_PERSONNEL = "personnel";
   private static final String CATEGORY_UNIT = "unit";
+  private static final String CATEGORY_VEHICLE = "vehicle";
 
   private final MilitaryPersonnelService militaryPersonnelService;
   private final MilitaryUnitService militaryUnitService;
+  private final VehicleService vehicleService;
   private final UserRepository userRepository;
   private final MilitaryPersonnelRepository militaryPersonnelRepository;
   private final MilitaryUnitRepository militaryUnitRepository;
 
   public CommonServiceImpl(MilitaryPersonnelService militaryPersonnelService,
                            MilitaryUnitService militaryUnitService,
+                           VehicleService vehicleService,
                            UserRepository userRepository,
                            MilitaryPersonnelRepository militaryPersonnelRepository,
                            MilitaryUnitRepository militaryUnitRepository) {
     this.militaryPersonnelService = militaryPersonnelService;
     this.militaryUnitService = militaryUnitService;
+    this.vehicleService = vehicleService;
     this.userRepository = userRepository;
     this.militaryPersonnelRepository = militaryPersonnelRepository;
     this.militaryUnitRepository = militaryUnitRepository;
@@ -59,6 +65,7 @@ public class CommonServiceImpl implements CommonService {
     return switch (normalizedCategory) {
       case CATEGORY_PERSONNEL -> militaryPersonnelService.storeImage(multipartFile);
       case CATEGORY_UNIT -> militaryUnitService.storeLogo(multipartFile);
+      case CATEGORY_VEHICLE -> vehicleService.storeImage(multipartFile);
       default -> throw new AppException(ErrorCode.COMMON_INVALID_FILE_CATEGORY);
     };
   }
@@ -68,6 +75,10 @@ public class CommonServiceImpl implements CommonService {
     String normalizedCategory = normalizeCategory(category);
     if (CATEGORY_PERSONNEL.equals(normalizedCategory)) {
       PersonnelImage image = militaryPersonnelService.loadImage(filename);
+      return new CommonImage(image.filename(), image.contentType(), image.content());
+    }
+    if (CATEGORY_VEHICLE.equals(normalizedCategory)) {
+      VehicleImage image = vehicleService.loadImage(filename);
       return new CommonImage(image.filename(), image.contentType(), image.content());
     }
     UnitLogo logo = militaryUnitService.loadLogo(filename);
@@ -108,7 +119,8 @@ public class CommonServiceImpl implements CommonService {
     }
     String normalized = category.trim().toLowerCase();
     if (CATEGORY_PERSONNEL.equals(normalized)
-        || CATEGORY_UNIT.equals(normalized)) {
+        || CATEGORY_UNIT.equals(normalized)
+        || CATEGORY_VEHICLE.equals(normalized)) {
       return normalized;
     }
     throw new AppException(ErrorCode.COMMON_INVALID_FILE_CATEGORY);

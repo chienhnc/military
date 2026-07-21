@@ -18,6 +18,7 @@ public class MilitaryPersonnelResponse {
   private String qrCode;
   private EQrSource qrSource;
   private String imageUrl;
+  private VehicleResponse vehicle;
 
   public MilitaryPersonnelResponse(MilitaryPersonnel militaryPersonnel) {
     BeanUtils.copyProperties(militaryPersonnel, this);

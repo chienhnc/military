@@ -46,4 +46,4 @@ Example signup endpoint (no stage prefix):
 - Lambda execution role needs `s3:GetObject`, `s3:PutObject`, `s3:DeleteObject` on your image bucket.
 - Template `template.yaml` already grants both S3 and DynamoDB permissions.
 - DynamoDB tables are created automatically by SAM template: `users`, `roles`, `military_personnel`,
-  `military_units`, `submission_groups`, `submission_flows`, `leave_approval_configs`.
+  `military_units`, `military_vehicles`, `submission_groups`, `submission_flows`, `leave_approval_configs`.

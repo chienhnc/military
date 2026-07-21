@@ -13,13 +13,17 @@ import com.military.models.EMilitaryRank;
 import com.military.models.EQrSource;
 import com.military.models.MilitaryPersonnel;
 import com.military.models.MilitaryUnit;
+import com.military.models.Vehicle;
 import com.military.payload.request.MilitaryPersonnelRequest;
 import com.military.payload.response.MilitaryPersonnelResponse;
+import com.military.payload.response.VehicleResponse;
 import com.military.repository.MilitaryPersonnelRepository;
 import com.military.repository.MilitaryUnitRepository;
 import com.military.repository.UserRepository;
+import com.military.repository.VehicleRepository;
 import com.military.security.services.UserDetailsImpl;
 import com.military.service.MilitaryPersonnelService;
+import com.military.service.VehicleService;
 import com.military.service.dto.PersonnelImage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -60,6 +64,7 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
   private static final Pattern MULTI_DASH = Pattern.compile("-+");
   private static final int QR_SIZE = 300;
   private static final String IMAGE_ENDPOINT = "/api/common/images/personnel/";
+  private static final String VEHICLE_IMAGE_ENDPOINT = "/api/common/images/vehicle/";
   private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
   private static final String ROLE_SYSTEM_ADMIN = "role_system_admin";
   private static final String ROLE_ADMIN_UNIT = "role_admin_unit";
@@ -68,6 +73,8 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
   private final MilitaryPersonnelRepository militaryPersonnelRepository;
   private final MilitaryUnitRepository militaryUnitRepository;
   private final UserRepository userRepository;
+  private final VehicleService vehicleService;
+  private final VehicleRepository vehicleRepository;
   private final S3Client s3Client;
   private final String bucketName;
   private final String objectPrefix;
@@ -76,6 +83,8 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
   public MilitaryPersonnelServiceImpl(MilitaryPersonnelRepository militaryPersonnelRepository,
                                       MilitaryUnitRepository militaryUnitRepository,
                                       UserRepository userRepository,
+                                      VehicleService vehicleService,
+                                      VehicleRepository vehicleRepository,
                                       S3Client s3Client,
                                       @Value("${military.app.s3.bucket}") String bucketName,
                                       @Value("${military.app.s3.prefix:personnel}") String objectPrefix,
@@ -83,6 +92,8 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
     this.militaryPersonnelRepository = militaryPersonnelRepository;
     this.militaryUnitRepository = militaryUnitRepository;
     this.userRepository = userRepository;
+    this.vehicleService = vehicleService;
+    this.vehicleRepository = vehicleRepository;
     this.s3Client = s3Client;
     this.bucketName = bucketName;
     this.objectPrefix = normalizePrefix(objectPrefix);
@@ -104,6 +115,14 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
     applySystemQrCode(personnel);
 
     MilitaryPersonnel saved = militaryPersonnelRepository.save(personnel);
+    if (militaryPersonnelRequest.getVehicle() != null) {
+      try {
+        vehicleService.create(saved.getId(), militaryPersonnelRequest.getVehicle());
+      } catch (RuntimeException ex) {
+        militaryPersonnelRepository.delete(saved);
+        throw ex;
+      }
+    }
     return toResponse(saved);
   }
 
@@ -155,6 +174,7 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
     if (!scope.systemAdmin() && !canAccessPersonnel(scope, personnel)) {
       throw new AppException(ErrorCode.UNAUTHORIZED);
     }
+    vehicleService.deleteByPersonnelId(personnel.getId());
     deleteImageIfExists(personnel.getImagePath());
     militaryPersonnelRepository.delete(personnel);
   }
@@ -500,6 +520,15 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
   private MilitaryPersonnelResponse toResponse(MilitaryPersonnel personnel) {
     MilitaryPersonnelResponse response = new MilitaryPersonnelResponse(personnel);
     response.setImageUrl(personnel.getImagePath() == null ? null : IMAGE_ENDPOINT + personnel.getImagePath());
+    vehicleRepository.findByPersonnelId(personnel.getId())
+        .ifPresent(vehicle -> response.setVehicle(toVehicleResponse(vehicle)));
+    return response;
+  }
+
+  private VehicleResponse toVehicleResponse(Vehicle vehicle) {
+    VehicleResponse response = new VehicleResponse(vehicle);
+    response.setImageUrls(vehicle.getImagePaths() == null ? List.of()
+        : vehicle.getImagePaths().stream().map(p -> VEHICLE_IMAGE_ENDPOINT + p).toList());
     return response;
   }
 }

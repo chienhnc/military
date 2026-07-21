@@ -53,7 +53,12 @@ public enum ErrorCode {
   QR_SCAN_INVALID_PAYLOAD("MIL00046", "error.qr_scan.invalid_payload", HttpStatus.BAD_REQUEST),
   QR_SCAN_LOG_NOT_FOUND("MIL00047", "error.qr_scan.log_not_found", HttpStatus.NOT_FOUND),
   QR_SCAN_INVALID_STATE("MIL00048", "error.qr_scan.invalid_state", HttpStatus.BAD_REQUEST),
-  QR_SCAN_CITIZEN_ACTION_ONLY("MIL00049", "error.qr_scan.citizen_action_only", HttpStatus.BAD_REQUEST);
+  QR_SCAN_CITIZEN_ACTION_ONLY("MIL00049", "error.qr_scan.citizen_action_only", HttpStatus.BAD_REQUEST),
+  VEHICLE_NOT_FOUND("MIL00050", "error.vehicle.not_found", HttpStatus.NOT_FOUND),
+  VEHICLE_IMAGE_NOT_FOUND("MIL00051", "error.vehicle.image_not_found", HttpStatus.NOT_FOUND),
+  VEHICLE_IMAGE_SAVE_FAILED("MIL00052", "error.vehicle.image_save_failed", HttpStatus.INTERNAL_SERVER_ERROR),
+  VEHICLE_IMAGE_DELETE_FAILED("MIL00053", "error.vehicle.image_delete_failed", HttpStatus.INTERNAL_SERVER_ERROR),
+  VEHICLE_ALREADY_EXISTS_FOR_PERSONNEL("MIL00054", "error.vehicle.already_exists_for_personnel", HttpStatus.BAD_REQUEST);
 
   private final String code;
   private final String messageKey;

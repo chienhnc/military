@@ -34,10 +34,10 @@ public class CommonController {
   }
 
   @PostMapping(value = "/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @Operation(summary = "Upload anh len S3", description = "category ho tro: personnel, unit")
+  @Operation(summary = "Upload anh len S3", description = "category ho tro: personnel, unit, vehicle")
   @ApiResponse(responseCode = "200", description = "Upload thanh cong")
   public ResponseEntity<BaseResponse<String>> uploadImage(
-      @Parameter(description = "Danh muc anh: personnel hoac unit", required = true)
+      @Parameter(description = "Danh muc anh: personnel, unit hoac vehicle", required = true)
       @RequestParam String category,
       @Parameter(description = "File anh/logo", required = true)
       @RequestParam MultipartFile multipartFile,
@@ -47,7 +47,7 @@ public class CommonController {
   }
 
   @GetMapping("/images/{category}/{filename:.+}")
-  @Operation(summary = "Lay anh/logo tu S3", description = "category ho tro: personnel, unit")
+  @Operation(summary = "Lay anh/logo tu S3", description = "category ho tro: personnel, unit, vehicle")
   @ApiResponse(responseCode = "200", description = "Lay anh thanh cong")
   public ResponseEntity<ByteArrayResource> getImage(@PathVariable String category, @PathVariable String filename) {
     CommonImage image = commonService.loadImage(category, filename);

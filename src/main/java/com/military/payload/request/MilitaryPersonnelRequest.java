@@ -3,6 +3,7 @@ package com.military.payload.request;
 import com.military.models.EMilitaryPosition;
 import com.military.models.EMilitaryRank;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -38,4 +39,8 @@ public class MilitaryPersonnelRequest {
 
     @Schema(description = "Ten file anh da upload qua API /api/common/upload-image?category=personnel", example = "e7de9ec1-f08d-4f34-bf6b-5f2f0a73c8ca.jpg")
     private String imagePath;
+
+    @Schema(description = "Thong tin phuong tien cua quan nhan (khong bat buoc; co the gan sau qua POST /api/vehicles)")
+    @Valid
+    private VehicleRequest vehicle;
 }
