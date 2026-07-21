@@ -92,18 +92,6 @@ public class MilitaryUnitRepositoryImpl implements MilitaryUnitRepository {
   }
 
   @Override
-  public List<MilitaryUnit> findByRegionCodeIgnoreCase(String regionCode) {
-    if (regionCode == null || regionCode.isBlank()) {
-      return List.of();
-    }
-    return table.scan().items().stream()
-        .filter(item -> item.getRegionCode() != null && item.getRegionCode().equalsIgnoreCase(regionCode))
-        .map(this::toModel)
-        .sorted(Comparator.comparing(MilitaryUnit::getId, Comparator.nullsLast(Long::compareTo)).reversed())
-        .collect(Collectors.toList());
-  }
-
-  @Override
   public Page<MilitaryUnit> findByUnitCodeContainingIgnoreCaseOrUnitNameContainingIgnoreCase(
       String unitCodeKeyword,
       String unitNameKeyword,
@@ -148,7 +136,6 @@ public class MilitaryUnitRepositoryImpl implements MilitaryUnitRepository {
   private MilitaryUnitItem toItem(MilitaryUnit model) {
     MilitaryUnitItem item = new MilitaryUnitItem();
     item.setId(model.getId());
-    item.setRegionCode(model.getRegionCode());
     item.setUnitCode(model.getUnitCode());
     item.setUnitName(model.getUnitName());
     item.setAddress(model.getAddress());
@@ -161,7 +148,6 @@ public class MilitaryUnitRepositoryImpl implements MilitaryUnitRepository {
   private MilitaryUnit toModel(MilitaryUnitItem item) {
     MilitaryUnit model = new MilitaryUnit();
     model.setId(item.getId());
-    model.setRegionCode(item.getRegionCode());
     model.setUnitCode(item.getUnitCode());
     model.setUnitName(item.getUnitName());
     model.setAddress(item.getAddress());

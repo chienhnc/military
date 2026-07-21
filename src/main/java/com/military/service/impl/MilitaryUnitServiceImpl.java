@@ -68,7 +68,6 @@ public class MilitaryUnitServiceImpl implements MilitaryUnitService {
     }
 
     String oldLogoPath = unit.getLogoPath();
-    unit.setRegionCode(request.getRegionCode());
     unit.setUnitCode(request.getUnitCode());
     unit.setUnitName(request.getUnitName());
     unit.setAddress(request.getAddress());

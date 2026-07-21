@@ -49,8 +49,7 @@ public class RoleRepositoryImpl implements RoleRepository {
       case ROLE_USER -> 1;
       case ROLE_MODERATOR -> 2;
       case ROLE_SYSTEM_ADMIN -> 3;
-      case ROLE_ADMIN_REGION -> 4;
-      case ROLE_ADMIN_UNIT -> 5;
+      case ROLE_ADMIN_UNIT -> 4;
     };
   }
 

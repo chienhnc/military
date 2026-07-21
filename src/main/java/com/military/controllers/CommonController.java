@@ -36,10 +36,10 @@ public class CommonController {
   }
 
   @PostMapping(value = "/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @Operation(summary = "Upload anh len S3", description = "category ho tro: personnel, region, unit")
+  @Operation(summary = "Upload anh len S3", description = "category ho tro: personnel, unit")
   @ApiResponse(responseCode = "200", description = "Upload thanh cong")
   public ResponseEntity<BaseResponse<String>> uploadImage(
-      @Parameter(description = "Danh muc anh: personnel hoac region", required = true)
+      @Parameter(description = "Danh muc anh: personnel hoac unit", required = true)
       @RequestParam String category,
       @Parameter(description = "File anh/logo", required = true)
       @RequestParam MultipartFile multipartFile,
@@ -49,7 +49,7 @@ public class CommonController {
   }
 
   @GetMapping("/images/{category}/{filename:.+}")
-  @Operation(summary = "Lay anh/logo tu S3", description = "category ho tro: personnel, region, unit")
+  @Operation(summary = "Lay anh/logo tu S3", description = "category ho tro: personnel, unit")
   @ApiResponse(responseCode = "200", description = "Lay anh thanh cong")
   public ResponseEntity<ByteArrayResource> getImage(@PathVariable String category, @PathVariable String filename) {
     CommonImage image = commonService.loadImage(category, filename);
@@ -77,22 +77,11 @@ public class CommonController {
     return ResponseEntity.ok(BaseResponse.of(200, data, request.getServletPath()));
   }
 
-  @GetMapping("/combobox/regions")
-  @Operation(summary = "Combobox quan khu theo quyen user dang nhap")
-  @ApiResponse(responseCode = "200", description = "Lay du lieu thanh cong")
-  public ResponseEntity<BaseResponse<List<ComboboxOptionResponse>>> getRegionCombobox(HttpServletRequest request) {
-    List<ComboboxOptionResponse> data = commonService.getRegionComboboxByCurrentUser();
-    return ResponseEntity.ok(BaseResponse.of(200, data, request.getServletPath()));
-  }
-
   @GetMapping("/combobox/units")
   @Operation(summary = "Combobox don vi theo quyen user dang nhap")
   @ApiResponse(responseCode = "200", description = "Lay du lieu thanh cong")
-  public ResponseEntity<BaseResponse<List<ComboboxOptionResponse>>> getUnitCombobox(
-      @Parameter(description = "Ma quan khu can loc", example = "QK7")
-      @RequestParam(required = false) String regionCode,
-      HttpServletRequest request) {
-    List<ComboboxOptionResponse> data = commonService.getUnitComboboxByCurrentUser(regionCode);
+  public ResponseEntity<BaseResponse<List<ComboboxOptionResponse>>> getUnitCombobox(HttpServletRequest request) {
+    List<ComboboxOptionResponse> data = commonService.getUnitComboboxByCurrentUser();
     return ResponseEntity.ok(BaseResponse.of(200, data, request.getServletPath()));
   }
 }

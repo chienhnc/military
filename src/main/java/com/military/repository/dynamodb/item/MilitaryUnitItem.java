@@ -8,7 +8,6 @@ import java.time.LocalDate;
 @DynamoDbBean
 public class MilitaryUnitItem {
   private Long id;
-  private String regionCode;
   private String unitCode;
   private String unitName;
   private String address;
@@ -23,14 +22,6 @@ public class MilitaryUnitItem {
 
   public void setId(Long id) {
     this.id = id;
-  }
-
-  public String getRegionCode() {
-    return regionCode;
-  }
-
-  public void setRegionCode(String regionCode) {
-    this.regionCode = regionCode;
   }
 
   public String getUnitCode() {

@@ -127,9 +127,6 @@ public class AuthServiceImpl implements AuthService {
         case "system_admin":
           roles.add(findRoleOrThrow(ERole.ROLE_SYSTEM_ADMIN));
           break;
-        case "admin_region":
-          roles.add(findRoleOrThrow(ERole.ROLE_ADMIN_REGION));
-          break;
         case "admin_unit":
           roles.add(findRoleOrThrow(ERole.ROLE_ADMIN_UNIT));
           break;
@@ -160,13 +157,6 @@ public class AuthServiceImpl implements AuthService {
     if (scope.systemAdmin()) {
       return;
     }
-    if (scope.adminRegion()) {
-      if (scope.regionCode() == null || targetUnit.getRegionCode() == null
-          || !scope.regionCode().equalsIgnoreCase(targetUnit.getRegionCode())) {
-        throw new AppException(ErrorCode.UNAUTHORIZED);
-      }
-      return;
-    }
     if (scope.adminUnit()) {
       if (scope.unitCode() == null || targetUnit.getUnitCode() == null
           || !scope.unitCode().equalsIgnoreCase(targetUnit.getUnitCode())) {
@@ -188,19 +178,18 @@ public class AuthServiceImpl implements AuthService {
 
     Set<String> roleNames = normalizeRoles(userDetails.getAuthorities());
     boolean systemAdmin = roleNames.contains("role_system_admin");
-    boolean adminRegion = roleNames.contains("role_admin_region");
     boolean adminUnit = roleNames.contains("role_admin_unit");
     boolean userRole = roleNames.contains("role_user");
 
-    if (!systemAdmin && !adminRegion && !adminUnit && !userRole) {
+    if (!systemAdmin && !adminUnit && !userRole) {
       throw new AppException(ErrorCode.UNAUTHORIZED);
     }
-    if (userRole && !systemAdmin && !adminRegion && !adminUnit) {
+    if (userRole && !systemAdmin && !adminUnit) {
       throw new AppException(ErrorCode.UNAUTHORIZED);
     }
 
     if (systemAdmin) {
-      return new AccessScope(true, false, false, false, null, null);
+      return new AccessScope(true, false, false, null);
     }
 
     User actor = userRepository.findById(userDetails.getId())
@@ -212,17 +201,13 @@ public class AuthServiceImpl implements AuthService {
     MilitaryPersonnel personnel = militaryPersonnelRepository.findById(personnelId)
         .orElseThrow(() -> new AppException(ErrorCode.PERSONNEL_NOT_FOUND));
 
-    String regionCode = personnel.getRegionCode();
     String unitCode = personnel.getUnitCode();
 
-    if (adminRegion && (regionCode == null || regionCode.isBlank())) {
-      throw new AppException(ErrorCode.PERSONNEL_NOT_FOUND);
-    }
     if (adminUnit && (unitCode == null || unitCode.isBlank())) {
       throw new AppException(ErrorCode.PERSONNEL_NOT_FOUND);
     }
 
-    return new AccessScope(false, adminRegion, adminUnit, userRole, regionCode, unitCode);
+    return new AccessScope(false, adminUnit, userRole, unitCode);
   }
 
   private Set<String> normalizeRoles(Collection<? extends GrantedAuthority> authorities) {
@@ -233,7 +218,6 @@ public class AuthServiceImpl implements AuthService {
         .collect(Collectors.toSet());
   }
 
-  private record AccessScope(boolean systemAdmin, boolean adminRegion, boolean adminUnit, boolean userRole,
-                             String regionCode, String unitCode) {
+  private record AccessScope(boolean systemAdmin, boolean adminUnit, boolean userRole, String unitCode) {
   }
 }

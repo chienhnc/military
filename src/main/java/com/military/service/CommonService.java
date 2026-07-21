@@ -15,7 +15,5 @@ public interface CommonService {
 
   List<ComboboxOptionResponse> getPositionCombobox();
 
-  List<ComboboxOptionResponse> getRegionComboboxByCurrentUser();
-
-  List<ComboboxOptionResponse> getUnitComboboxByCurrentUser(String regionCode);
+  List<ComboboxOptionResponse> getUnitComboboxByCurrentUser();
 }

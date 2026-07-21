@@ -11,7 +11,6 @@ import org.springframework.beans.BeanUtils;
 public class MilitaryPersonnelResponse {
   private Long id;
   private String fullName;
-  private String regionCode;
   private EMilitaryRank rankCode;
   private String unitCode;
   private EMilitaryPosition positionCode;

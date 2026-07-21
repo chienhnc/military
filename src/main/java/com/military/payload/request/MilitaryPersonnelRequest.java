@@ -20,9 +20,6 @@ public class MilitaryPersonnelRequest {
     @Size(max = 200)
     private String fullName;
 
-    @Schema(description = "Ma quan khu (tu dong lay theo ma don vi)", example = "QK7")
-    private String regionCode;
-
     @Schema(description = "Cap bac (enum EMilitaryRank)", example = "DAI_UY")
     @NotNull
     private EMilitaryRank rankCode;

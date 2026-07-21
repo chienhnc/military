@@ -9,7 +9,6 @@ import java.time.LocalDate;
 @Data
 public class MilitaryUnitResponse {
   private Long id;
-  private String regionCode;
   private String unitCode;
   private String unitName;
   private String address;

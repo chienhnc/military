@@ -24,8 +24,6 @@ public interface MilitaryUnitRepository {
 
   List<MilitaryUnit> findAllList();
 
-  List<MilitaryUnit> findByRegionCodeIgnoreCase(String regionCode);
-
   Page<MilitaryUnit> findByUnitCodeContainingIgnoreCaseOrUnitNameContainingIgnoreCase(String unitCodeKeyword,
                                                                                         String unitNameKeyword,
                                                                                         Pageable pageable);

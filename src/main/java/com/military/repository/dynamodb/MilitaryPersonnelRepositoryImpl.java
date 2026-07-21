@@ -138,7 +138,6 @@ public class MilitaryPersonnelRepositoryImpl implements MilitaryPersonnelReposit
     item.setId(model.getId());
     item.setCode(model.getCode());
     item.setFullName(model.getFullName());
-    item.setRegionCode(model.getRegionCode());
     item.setRankCode(model.getRankCode() == null ? null : model.getRankCode().name());
     item.setUnitCode(model.getUnitCode());
     item.setPositionCode(model.getPositionCode() == null ? null : model.getPositionCode().name());
@@ -153,7 +152,6 @@ public class MilitaryPersonnelRepositoryImpl implements MilitaryPersonnelReposit
     model.setId(item.getId());
     model.setCode(item.getCode());
     model.setFullName(item.getFullName());
-    model.setRegionCode(item.getRegionCode());
     model.setRankCode(parseRank(item.getRankCode()));
     model.setUnitCode(item.getUnitCode());
     model.setPositionCode(parsePosition(item.getPositionCode()));

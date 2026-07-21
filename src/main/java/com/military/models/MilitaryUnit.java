@@ -11,7 +11,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class MilitaryUnit {
   private Long id;
-  private String regionCode;
   private String unitCode;
   private String unitName;
   private String address;

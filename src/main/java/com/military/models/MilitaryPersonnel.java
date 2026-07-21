@@ -11,7 +11,6 @@ public class MilitaryPersonnel {
   private Long id;
   private String code;
   private String fullName;
-  private String regionCode;
   private EMilitaryRank rankCode;
   private String unitCode;
   private EMilitaryPosition positionCode;

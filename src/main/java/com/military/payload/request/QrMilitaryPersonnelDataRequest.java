@@ -7,7 +7,6 @@ public class QrMilitaryPersonnelDataRequest {
   private Long id;
   private String code;
   private String fullName;
-  private String regionCode;
   private String rankCode;
   private String unitCode;
   private String positionCode;
@@ -34,14 +33,6 @@ public class QrMilitaryPersonnelDataRequest {
 
   public void setFullName(String fullName) {
     this.fullName = fullName;
-  }
-
-  public String getRegionCode() {
-    return regionCode;
-  }
-
-  public void setRegionCode(String regionCode) {
-    this.regionCode = regionCode;
   }
 
   public String getRankCode() {

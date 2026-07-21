@@ -12,11 +12,6 @@ import java.time.LocalDate;
 @Schema(description = "Thong tin don vi")
 public class MilitaryUnitRequest {
 
-  @Schema(description = "Ma quan khu", example = "QK7")
-  @NotBlank
-  @Size(max = 50)
-  private String regionCode;
-
   @Schema(description = "Ma don vi", example = "DV001")
   @NotBlank
   @Size(max = 50)

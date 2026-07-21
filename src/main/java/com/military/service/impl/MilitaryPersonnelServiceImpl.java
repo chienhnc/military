@@ -62,7 +62,6 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
   private static final String IMAGE_ENDPOINT = "/api/common/images/personnel/";
   private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
   private static final String ROLE_SYSTEM_ADMIN = "role_system_admin";
-  private static final String ROLE_ADMIN_REGION = "role_admin_region";
   private static final String ROLE_ADMIN_UNIT = "role_admin_unit";
   private static final String ROLE_USER = "role_user";
 
@@ -100,8 +99,7 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
 
     MilitaryPersonnel personnel = new MilitaryPersonnel(militaryPersonnelRequest);
     personnel.setUnitCode(unit.getUnitCode());
-    personnel.setRegionCode(unit.getRegionCode());
-    personnel.setCode(generateCode(unit.getRegionCode(), unit.getUnitCode(), militaryPersonnelRequest.getRankCode(),
+    personnel.setCode(generateCode(unit.getUnitCode(), militaryPersonnelRequest.getRankCode(),
         militaryPersonnelRequest.getPositionCode()));
     applySystemQrCode(personnel);
 
@@ -150,7 +148,7 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
 
   public void delete(Long id) {
     AccessScope scope = resolveAccessScope();
-    if (scope.userRole() && !scope.systemAdmin() && !scope.adminRegion() && !scope.adminUnit()) {
+    if (scope.userRole() && !scope.systemAdmin() && !scope.adminUnit()) {
       throw new AppException(ErrorCode.UNAUTHORIZED);
     }
     MilitaryPersonnel personnel = findEntityById(id);
@@ -200,11 +198,10 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
         || !Objects.equals(personnel.getPositionCode(), position);
   }
 
-  private synchronized String generateCode(String regionCode,
-                                           String unitCode,
+  private synchronized String generateCode(String unitCode,
                                            EMilitaryRank rankCode,
                                            EMilitaryPosition positionCode) {
-    String prefix = buildPrefix(regionCode, unitCode, rankCode, positionCode);
+    String prefix = buildPrefix(unitCode, rankCode, positionCode);
     Optional<MilitaryPersonnel> latest = militaryPersonnelRepository
         .findFirstByCodeStartingWithOrderByCodeDesc(prefix);
 
@@ -229,12 +226,11 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
     return code;
   }
 
-  private String buildPrefix(String regionCode, String unitCode, EMilitaryRank rank, EMilitaryPosition position) {
-    String regionSegment = sanitizeForCode(regionCode);
+  private String buildPrefix(String unitCode, EMilitaryRank rank, EMilitaryPosition position) {
     String unitSegment = sanitizeForCode(unitCode);
     String rankSegment = sanitizeForCode(rank == null ? null : rank.getCode());
     String positionSegment = sanitizeForCode(position == null ? null : position.getCode());
-    return regionSegment + "|" + unitSegment + "|" + rankSegment + "|" + positionSegment;
+    return unitSegment + "|" + rankSegment + "|" + positionSegment;
   }
 
   private String sanitizeForCode(String value) {
@@ -287,16 +283,14 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
 
     Set<String> roleNames = normalizeRoles(userDetails.getAuthorities());
     boolean systemAdmin = roleNames.contains(ROLE_SYSTEM_ADMIN);
-    boolean adminRegion = roleNames.contains(ROLE_ADMIN_REGION);
     boolean adminUnit = roleNames.contains(ROLE_ADMIN_UNIT);
     boolean userRole = roleNames.contains(ROLE_USER);
 
-    if (!systemAdmin && !adminRegion && !adminUnit && !userRole) {
+    if (!systemAdmin && !adminUnit && !userRole) {
       throw new AppException(ErrorCode.UNAUTHORIZED);
     }
 
     Long currentPersonnelId = null;
-    String regionCode = null;
     String unitCode = null;
 
     if (!systemAdmin) {
@@ -308,14 +302,13 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
       }
       MilitaryPersonnel currentPersonnel = militaryPersonnelRepository.findById(currentPersonnelId)
           .orElseThrow(() -> new AppException(ErrorCode.PERSONNEL_NOT_FOUND));
-      regionCode = currentPersonnel.getRegionCode();
       unitCode = currentPersonnel.getUnitCode();
-      if ((adminRegion || adminUnit) && (regionCode == null || unitCode == null)) {
+      if (adminUnit && unitCode == null) {
         throw new AppException(ErrorCode.PERSONNEL_NOT_FOUND);
       }
     }
 
-    return new AccessScope(systemAdmin, adminRegion, adminUnit, userRole, currentPersonnelId, regionCode, unitCode);
+    return new AccessScope(systemAdmin, adminUnit, userRole, currentPersonnelId, unitCode);
   }
 
   private AccessScope resolveAccessScopeIfPresent() {
@@ -331,13 +324,6 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
 
   private void authorizeCreate(AccessScope scope, MilitaryUnit targetUnit) {
     if (scope == null || scope.systemAdmin()) {
-      return;
-    }
-    if (scope.adminRegion()) {
-      if (scope.regionCode() == null || targetUnit.getRegionCode() == null
-          || !scope.regionCode().equalsIgnoreCase(targetUnit.getRegionCode())) {
-        throw new AppException(ErrorCode.UNAUTHORIZED);
-      }
       return;
     }
     if (scope.adminUnit()) {
@@ -356,17 +342,12 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
       return;
     }
 
-    if (scope.adminRegion() || scope.adminUnit()) {
+    if (scope.adminUnit()) {
       if (!canAccessPersonnel(scope, personnel)) {
         throw new AppException(ErrorCode.UNAUTHORIZED);
       }
       MilitaryUnit targetUnit = resolveUnitByCode(request.getUnitCode());
-      if (scope.adminRegion()
-          && (scope.regionCode() == null || !scope.regionCode().equalsIgnoreCase(targetUnit.getRegionCode()))) {
-        throw new AppException(ErrorCode.UNAUTHORIZED);
-      }
-      if (scope.adminUnit()
-          && (scope.unitCode() == null || !scope.unitCode().equalsIgnoreCase(targetUnit.getUnitCode()))) {
+      if (scope.unitCode() == null || !scope.unitCode().equalsIgnoreCase(targetUnit.getUnitCode())) {
         throw new AppException(ErrorCode.UNAUTHORIZED);
       }
       applyFullUpdate(personnel, request);
@@ -390,12 +371,11 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
     personnel.setFullName(request.getFullName());
     boolean shouldRegenerateCode = isPrefixChanged(personnel, unit.getUnitCode(),
         request.getRankCode(), request.getPositionCode());
-    personnel.setRegionCode(unit.getRegionCode());
     personnel.setRankCode(request.getRankCode());
     personnel.setUnitCode(unit.getUnitCode());
     personnel.setPositionCode(request.getPositionCode());
     if (shouldRegenerateCode) {
-      personnel.setCode(generateCode(unit.getRegionCode(), unit.getUnitCode(), request.getRankCode(),
+      personnel.setCode(generateCode(unit.getUnitCode(), request.getRankCode(),
           request.getPositionCode()));
     }
     personnel.setImagePath(request.getImagePath());
@@ -413,9 +393,6 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
   private boolean canAccessPersonnel(AccessScope scope, MilitaryPersonnel personnel) {
     if (scope.systemAdmin()) {
       return true;
-    }
-    if (scope.adminRegion()) {
-      return scope.regionCode() != null && scope.regionCode().equalsIgnoreCase(personnel.getRegionCode());
     }
     if (scope.adminUnit()) {
       return scope.unitCode() != null && scope.unitCode().equalsIgnoreCase(personnel.getUnitCode());
@@ -439,8 +416,8 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
     return value != null && keywordLower != null && value.toLowerCase(Locale.ROOT).contains(keywordLower);
   }
 
-  private record AccessScope(boolean systemAdmin, boolean adminRegion, boolean adminUnit, boolean userRole,
-                             Long currentPersonnelId, String regionCode, String unitCode) {
+  private record AccessScope(boolean systemAdmin, boolean adminUnit, boolean userRole,
+                             Long currentPersonnelId, String unitCode) {
   }
 
   public String storeImage(MultipartFile imageFile) {
