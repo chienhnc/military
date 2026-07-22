@@ -18,4 +18,6 @@ public interface CommonService {
   List<ComboboxOptionResponse> getUnitComboboxByCurrentUser();
 
   List<ComboboxOptionResponse> getUserCombobox();
+
+  List<ComboboxOptionResponse> getMilitaryPersonnelCombobox();
 }

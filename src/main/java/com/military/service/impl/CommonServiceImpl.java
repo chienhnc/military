@@ -129,6 +129,17 @@ public class CommonServiceImpl implements CommonService {
         .toList();
   }
 
+  @Override
+  public List<ComboboxOptionResponse> getMilitaryPersonnelCombobox() {
+    Map<Long, MilitaryPersonnel> personnelById = militaryPersonnelRepository.findAllList().stream()
+            .collect(Collectors.toMap(MilitaryPersonnel::getId, personnel -> personnel, (a, b) -> a));
+    return militaryPersonnelRepository.findAllList().stream()
+            .map(user -> {
+              return new ComboboxOptionResponse(String.valueOf(user.getId()), user.getFullName());
+            })
+            .toList();
+  }
+
   private String normalizeCategory(String category) {
     if (category == null || category.isBlank()) {
       throw new AppException(ErrorCode.COMMON_INVALID_FILE_CATEGORY);
