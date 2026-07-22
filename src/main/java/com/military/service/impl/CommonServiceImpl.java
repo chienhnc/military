@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -110,6 +111,21 @@ public class CommonServiceImpl implements CommonService {
     }
     return units.stream()
         .map(unit -> new ComboboxOptionResponse(unit.getUnitCode(), unit.getUnitName()))
+        .toList();
+  }
+
+  @Override
+  public List<ComboboxOptionResponse> getUserCombobox() {
+    Map<Long, MilitaryPersonnel> personnelById = militaryPersonnelRepository.findAllList().stream()
+        .collect(Collectors.toMap(MilitaryPersonnel::getId, personnel -> personnel, (a, b) -> a));
+    return userRepository.findAllList().stream()
+        .filter(user -> user.getMilitaryPersonnelId() != null
+            && personnelById.containsKey(user.getMilitaryPersonnelId()))
+        .map(user -> {
+          MilitaryPersonnel personnel = personnelById.get(user.getMilitaryPersonnelId());
+          String name = personnel.getFullName() + " (" + user.getUsername() + ")";
+          return new ComboboxOptionResponse(String.valueOf(user.getId()), name);
+        })
         .toList();
   }
 

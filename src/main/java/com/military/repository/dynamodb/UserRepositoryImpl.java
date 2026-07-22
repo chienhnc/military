@@ -10,6 +10,7 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -73,6 +74,13 @@ public class UserRepositoryImpl implements UserRepository {
     }
     return table.scan().items().stream()
         .anyMatch(item -> militaryPersonnelId.equals(item.getMilitaryPersonnelId()));
+  }
+
+  @Override
+  public List<User> findAllList() {
+    return table.scan().items().stream()
+        .map(this::toModel)
+        .toList();
   }
 
   private long generateUniqueId() {

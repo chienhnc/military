@@ -3,6 +3,7 @@ package com.military.repository;
 import com.military.models.User;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,4 +19,6 @@ public interface UserRepository {
   Boolean existsByEmail(String email);
 
   Boolean existsByMilitaryPersonnel_Id(Long militaryPersonnelId);
+
+  List<User> findAllList();
 }

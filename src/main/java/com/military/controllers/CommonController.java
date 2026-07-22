@@ -82,4 +82,12 @@ public class CommonController {
     List<ComboboxOptionResponse> data = commonService.getUnitComboboxByCurrentUser();
     return ResponseEntity.ok(BaseResponse.of(200, data, request.getServletPath()));
   }
+
+  @GetMapping("/combobox/users")
+  @Operation(summary = "Combobox user", description = "Tra danh sach user co lien ket MilitaryPersonnel (inner join)")
+  @ApiResponse(responseCode = "200", description = "Lay du lieu thanh cong")
+  public ResponseEntity<BaseResponse<List<ComboboxOptionResponse>>> getUserCombobox(HttpServletRequest request) {
+    List<ComboboxOptionResponse> data = commonService.getUserCombobox();
+    return ResponseEntity.ok(BaseResponse.of(200, data, request.getServletPath()));
+  }
 }

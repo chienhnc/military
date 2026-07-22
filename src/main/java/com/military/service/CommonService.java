@@ -16,4 +16,6 @@ public interface CommonService {
   List<ComboboxOptionResponse> getPositionCombobox();
 
   List<ComboboxOptionResponse> getUnitComboboxByCurrentUser();
+
+  List<ComboboxOptionResponse> getUserCombobox();
 }
