@@ -17,6 +17,7 @@ import com.military.payload.request.LeaveRequestUpdateRequest;
 import com.military.payload.response.LeaveApprovalCapabilityResponse;
 import com.military.payload.response.LeaveRequestHistoryResponse;
 import com.military.payload.response.LeaveRequestResponse;
+import com.military.payload.response.MilitaryPersonnelResponse;
 import com.military.repository.LeaveApprovalConfigRepository;
 import com.military.repository.LeaveRequestHistoryRepository;
 import com.military.repository.LeaveRequestRepository;
@@ -42,6 +43,8 @@ import java.util.Optional;
 
 @Service
 public class LeaveRequestServiceImpl implements LeaveRequestService {
+  private static final String IMAGE_ENDPOINT = "/api/common/images/personnel/";
+
   private final LeaveRequestRepository leaveRequestRepository;
   private final LeaveRequestHistoryRepository leaveRequestHistoryRepository;
   private final UserRepository userRepository;
@@ -575,7 +578,18 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
   }
 
   private LeaveRequestResponse toResponse(LeaveRequest leaveRequest) {
-    return new LeaveRequestResponse(leaveRequest);
+    LeaveRequestResponse response = new LeaveRequestResponse(leaveRequest);
+    if (leaveRequest.getMilitaryPersonnelId() != null) {
+      militaryPersonnelRepository.findById(leaveRequest.getMilitaryPersonnelId())
+          .ifPresent(personnel -> response.setMilitaryPersonnel(toPersonnelResponse(personnel)));
+    }
+    return response;
+  }
+
+  private MilitaryPersonnelResponse toPersonnelResponse(MilitaryPersonnel personnel) {
+    MilitaryPersonnelResponse response = new MilitaryPersonnelResponse(personnel);
+    response.setImageUrl(personnel.getImagePath() == null ? null : IMAGE_ENDPOINT + personnel.getImagePath());
+    return response;
   }
 
   private record CurrentUserContext(User user, MilitaryPersonnel personnel) {

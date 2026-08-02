@@ -22,6 +22,7 @@ public class LeaveRequestResponse {
   private String reason;
   private Integer allowedOutCount;
   private Integer usedOutCount;
+  private MilitaryPersonnelResponse militaryPersonnel;
 
   public LeaveRequestResponse(LeaveRequest leaveRequest) {
     BeanUtils.copyProperties(leaveRequest, this);

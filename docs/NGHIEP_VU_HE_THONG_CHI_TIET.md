@@ -123,6 +123,7 @@
 - `flowId`, `currentOrderNo`, `currentRound`, `currentAssignee`.
 - `allowedOutCount`: số lần được phép ra (nhập khi tạo đơn).
 - `usedOutCount`: số lần đã ra (khởi tạo trống/null).
+- `militaryPersonnel`: DTO thông tin quân nhân gắn với đơn (họ tên, cấp bậc, đơn vị, chức vụ, `imageUrl`...), tra cứu theo `militaryPersonnelId` tại thời điểm trả response, `null` nếu quân nhân không còn tồn tại. Áp dụng cho mọi API trả `LeaveRequestResponse` (`my`, `pending`, chi tiết, các hành động duyệt).
 
 ### 7.2 Khởi tạo lịch sử round
 - Khi tạo đơn:
