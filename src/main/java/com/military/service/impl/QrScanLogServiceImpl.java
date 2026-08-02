@@ -10,15 +10,18 @@ import com.military.models.LeaveRequest;
 import com.military.models.LeaveRequestHistory;
 import com.military.models.MilitaryPersonnel;
 import com.military.models.QrScanLog;
+import com.military.models.Vehicle;
 import com.military.payload.request.QrCitizenDataRequest;
 import com.military.payload.request.QrMilitaryPersonnelDataRequest;
 import com.military.payload.request.QrScanDecisionRequest;
 import com.military.payload.request.QrScanRequest;
 import com.military.payload.response.QrScanLogResponse;
+import com.military.payload.response.VehicleResponse;
 import com.military.repository.LeaveRequestHistoryRepository;
 import com.military.repository.LeaveRequestRepository;
 import com.military.repository.MilitaryPersonnelRepository;
 import com.military.repository.QrScanLogRepository;
+import com.military.repository.VehicleRepository;
 import com.military.service.QrScanLogService;
 import org.springframework.stereotype.Service;
 
@@ -29,21 +32,27 @@ import java.util.Optional;
 
 @Service
 public class QrScanLogServiceImpl implements QrScanLogService {
+  private static final String IMAGE_ENDPOINT = "/api/common/images/personnel/";
+  private static final String VEHICLE_IMAGE_ENDPOINT = "/api/common/images/vehicle/";
+
   private final QrScanLogRepository qrScanLogRepository;
   private final MilitaryPersonnelRepository militaryPersonnelRepository;
   private final LeaveRequestRepository leaveRequestRepository;
   private final LeaveRequestHistoryRepository leaveRequestHistoryRepository;
+  private final VehicleRepository vehicleRepository;
   private final Gson gson;
 
   public QrScanLogServiceImpl(QrScanLogRepository qrScanLogRepository,
                               MilitaryPersonnelRepository militaryPersonnelRepository,
                               LeaveRequestRepository leaveRequestRepository,
                               LeaveRequestHistoryRepository leaveRequestHistoryRepository,
+                              VehicleRepository vehicleRepository,
                               Gson gson) {
     this.qrScanLogRepository = qrScanLogRepository;
     this.militaryPersonnelRepository = militaryPersonnelRepository;
     this.leaveRequestRepository = leaveRequestRepository;
     this.leaveRequestHistoryRepository = leaveRequestHistoryRepository;
+    this.vehicleRepository = vehicleRepository;
     this.gson = gson;
   }
 
@@ -227,7 +236,23 @@ public class QrScanLogServiceImpl implements QrScanLogService {
   }
 
   private QrScanLogResponse toResponse(QrScanLog log) {
-    return new QrScanLogResponse(log);
+    QrScanLogResponse response = new QrScanLogResponse(log);
+    if (log.getScanType() == EQrScanType.MILITARY && log.getMilitaryPersonnelId() != null) {
+      militaryPersonnelRepository.findById(log.getMilitaryPersonnelId()).ifPresent(personnel -> {
+        response.setMilitaryPersonnelImageUrl(
+            personnel.getImagePath() == null ? null : IMAGE_ENDPOINT + personnel.getImagePath());
+        vehicleRepository.findByPersonnelId(personnel.getId())
+            .ifPresent(vehicle -> response.setMilitaryPersonnelVehicle(toVehicleResponse(vehicle)));
+      });
+    }
+    return response;
+  }
+
+  private VehicleResponse toVehicleResponse(Vehicle vehicle) {
+    VehicleResponse response = new VehicleResponse(vehicle);
+    response.setImageUrls(vehicle.getImagePaths() == null ? List.of()
+        : vehicle.getImagePaths().stream().map(p -> VEHICLE_IMAGE_ENDPOINT + p).toList());
+    return response;
   }
 
   private record ApprovedRequestCandidate(LeaveRequest leaveRequest, String approvedRoundNo) {

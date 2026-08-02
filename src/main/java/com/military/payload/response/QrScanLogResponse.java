@@ -17,6 +17,8 @@ public class QrScanLogResponse {
   private Long militaryPersonnelId;
   private String militaryPersonnelCode;
   private String militaryPersonnelFullName;
+  private String militaryPersonnelImageUrl;
+  private VehicleResponse militaryPersonnelVehicle;
 
   private String citizenName;
   private LocalDate citizenBirthday;
