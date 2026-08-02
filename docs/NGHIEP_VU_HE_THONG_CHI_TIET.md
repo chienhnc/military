@@ -65,7 +65,7 @@
 - `ROLE_SYSTEM_ADMIN`: xem toàn bộ.
 - `ROLE_ADMIN_REGION`: xem toàn bộ quân nhân trong quân khu của mình.
 - `ROLE_ADMIN_UNIT`: xem toàn bộ quân nhân trong đơn vị của mình.
-- `ROLE_USER`: chỉ xem thông tin quân nhân gắn với chính user đó.
+- `ROLE_USER`: xem toàn bộ quân nhân trong đơn vị của mình (theo `unitCode` của quân nhân gắn với user đăng nhập).
 - Quyền tạo/xóa/sửa:
 - `ROLE_USER`: không có quyền tạo, xóa; chỉ được sửa `imagePath` của chính mình.
 - `ROLE_ADMIN_UNIT`: full quyền trong đơn vị.

@@ -418,7 +418,7 @@ public class MilitaryPersonnelServiceImpl implements MilitaryPersonnelService {
       return scope.unitCode() != null && scope.unitCode().equalsIgnoreCase(personnel.getUnitCode());
     }
     if (scope.userRole()) {
-      return scope.currentPersonnelId() != null && scope.currentPersonnelId().equals(personnel.getId());
+      return scope.unitCode() != null && scope.unitCode().equalsIgnoreCase(personnel.getUnitCode());
     }
     return false;
   }
