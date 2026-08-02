@@ -6,17 +6,24 @@ import com.military.payload.response.ComboboxOptionResponse;
 import com.military.repository.MilitaryPersonnelRepository;
 import com.military.repository.MilitaryUnitRepository;
 import com.military.repository.UserRepository;
+import com.military.security.services.UserDetailsImpl;
 import com.military.service.MilitaryPersonnelService;
 import com.military.service.MilitaryUnitService;
 import com.military.service.VehicleService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -55,6 +62,21 @@ class CommonServiceImplUserComboboxTest {
         militaryPersonnelRepository,
         militaryUnitRepository
     );
+    authenticateAs(999L, "ROLE_SYSTEM_ADMIN");
+  }
+
+  @AfterEach
+  void tearDown() {
+    SecurityContextHolder.clearContext();
+  }
+
+  private void authenticateAs(Long userId, String... roles) {
+    List<SimpleGrantedAuthority> authorities = Arrays.stream(roles)
+        .map(SimpleGrantedAuthority::new)
+        .toList();
+    UserDetailsImpl principal = new UserDetailsImpl(userId, "tester", "tester@example.com", "password", authorities);
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken(principal, null, authorities));
   }
 
   @Test
@@ -233,5 +255,83 @@ class CommonServiceImplUserComboboxTest {
     assertDoesNotThrow(() -> commonService.getUserCombobox());
     List<ComboboxOptionResponse> result = commonService.getUserCombobox();
     assertTrue(result.isEmpty());
+  }
+
+  @Test
+  @DisplayName("ROLE_USER should only see users from the same unit")
+  void testRoleUserOnlySeesSameUnitUsers() {
+    // Arrange
+    MilitaryPersonnel personnelUnitA = new MilitaryPersonnel();
+    personnelUnitA.setId(100L);
+    personnelUnitA.setFullName("John Doe");
+    personnelUnitA.setUnitCode("UNIT-A");
+
+    MilitaryPersonnel personnelUnitB = new MilitaryPersonnel();
+    personnelUnitB.setId(200L);
+    personnelUnitB.setFullName("Jane Smith");
+    personnelUnitB.setUnitCode("UNIT-B");
+
+    User callerUser = new User();
+    callerUser.setId(1L);
+    callerUser.setUsername("john_doe");
+    callerUser.setMilitaryPersonnelId(100L);
+
+    User otherUnitUser = new User();
+    otherUnitUser.setId(2L);
+    otherUnitUser.setUsername("jane_smith");
+    otherUnitUser.setMilitaryPersonnelId(200L);
+
+    when(userRepository.findAllList()).thenReturn(List.of(callerUser, otherUnitUser));
+    when(militaryPersonnelRepository.findAllList()).thenReturn(List.of(personnelUnitA, personnelUnitB));
+    when(userRepository.findById(1L)).thenReturn(Optional.of(callerUser));
+    when(militaryPersonnelRepository.findById(100L)).thenReturn(Optional.of(personnelUnitA));
+
+    authenticateAs(1L, "ROLE_USER");
+
+    // Act
+    List<ComboboxOptionResponse> result = commonService.getUserCombobox();
+
+    // Assert
+    assertEquals(1, result.size());
+    assertEquals("1", result.get(0).code());
+  }
+
+  @Test
+  @DisplayName("ROLE_ADMIN_UNIT should only see users from the same unit")
+  void testRoleAdminUnitOnlySeesSameUnitUsers() {
+    // Arrange
+    MilitaryPersonnel personnelUnitA = new MilitaryPersonnel();
+    personnelUnitA.setId(100L);
+    personnelUnitA.setFullName("John Doe");
+    personnelUnitA.setUnitCode("UNIT-A");
+
+    MilitaryPersonnel personnelUnitB = new MilitaryPersonnel();
+    personnelUnitB.setId(200L);
+    personnelUnitB.setFullName("Jane Smith");
+    personnelUnitB.setUnitCode("UNIT-B");
+
+    User callerUser = new User();
+    callerUser.setId(1L);
+    callerUser.setUsername("john_doe");
+    callerUser.setMilitaryPersonnelId(100L);
+
+    User otherUnitUser = new User();
+    otherUnitUser.setId(2L);
+    otherUnitUser.setUsername("jane_smith");
+    otherUnitUser.setMilitaryPersonnelId(200L);
+
+    when(userRepository.findAllList()).thenReturn(List.of(callerUser, otherUnitUser));
+    when(militaryPersonnelRepository.findAllList()).thenReturn(List.of(personnelUnitA, personnelUnitB));
+    when(userRepository.findById(1L)).thenReturn(Optional.of(callerUser));
+    when(militaryPersonnelRepository.findById(100L)).thenReturn(Optional.of(personnelUnitA));
+
+    authenticateAs(1L, "ROLE_ADMIN_UNIT");
+
+    // Act
+    List<ComboboxOptionResponse> result = commonService.getUserCombobox();
+
+    // Assert
+    assertEquals(1, result.size());
+    assertEquals("1", result.get(0).code());
   }
 }

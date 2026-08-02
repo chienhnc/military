@@ -207,7 +207,13 @@
 - `GET /api/common/combobox/positions`
 - `GET /api/common/combobox/regions`
 - `GET /api/common/combobox/units?regionCode=...`
+- `GET /api/common/combobox/users`
+- `GET /api/common/combobox/military-personnel`
 - Dữ liệu `regions/units` có áp dụng phạm vi theo role đăng nhập.
+- Dữ liệu `users` (chỉ trả user có liên kết `MilitaryPersonnel` hợp lệ) áp dụng phạm vi theo role đăng nhập:
+- `ROLE_SYSTEM_ADMIN`: xem toàn bộ user.
+- `ROLE_ADMIN_UNIT`, `ROLE_USER`: chỉ xem user cùng đơn vị (theo `unitCode` của quân nhân gắn với user đăng nhập).
+- Role khác ngoài 3 role trên: bị từ chối (`UNAUTHORIZED`).
 
 ## 11. Mô hình lưu trữ dữ liệu (DynamoDB)
 - `users`

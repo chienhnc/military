@@ -38,6 +38,7 @@ public class CommonServiceImpl implements CommonService {
   private static final String CATEGORY_PERSONNEL = "personnel";
   private static final String CATEGORY_UNIT = "unit";
   private static final String CATEGORY_VEHICLE = "vehicle";
+  private static final String ROLE_USER = "role_user";
 
   private final MilitaryPersonnelService militaryPersonnelService;
   private final MilitaryUnitService militaryUnitService;
@@ -116,17 +117,50 @@ public class CommonServiceImpl implements CommonService {
 
   @Override
   public List<ComboboxOptionResponse> getUserCombobox() {
+    UserComboboxScope scope = resolveUserComboboxScope();
     Map<Long, MilitaryPersonnel> personnelById = militaryPersonnelRepository.findAllList().stream()
         .collect(Collectors.toMap(MilitaryPersonnel::getId, personnel -> personnel, (a, b) -> a));
     return userRepository.findAllList().stream()
         .filter(user -> user.getMilitaryPersonnelId() != null
             && personnelById.containsKey(user.getMilitaryPersonnelId()))
+        .filter(user -> scope.systemAdmin()
+            || scope.unitCode().equalsIgnoreCase(personnelById.get(user.getMilitaryPersonnelId()).getUnitCode()))
         .map(user -> {
           MilitaryPersonnel personnel = personnelById.get(user.getMilitaryPersonnelId());
           String name = personnel.getFullName() + " (" + user.getUsername() + ")";
           return new ComboboxOptionResponse(String.valueOf(user.getId()), name);
         })
         .toList();
+  }
+
+  private UserComboboxScope resolveUserComboboxScope() {
+    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    if (!(principal instanceof UserDetailsImpl userDetails)) {
+      throw new AppException(ErrorCode.UNAUTHORIZED);
+    }
+
+    Set<String> roleNames = normalizeRoles(userDetails.getAuthorities());
+    boolean systemAdmin = hasAnyRole(roleNames, "system_admin", "role_system_admin");
+    boolean adminUnit = hasAnyRole(roleNames, "admin_unit", "role_admin_unit");
+    boolean userRole = roleNames.contains(ROLE_USER);
+    if (!systemAdmin && !adminUnit && !userRole) {
+      throw new AppException(ErrorCode.UNAUTHORIZED);
+    }
+    if (systemAdmin) {
+      return new UserComboboxScope(true, null);
+    }
+
+    User user = userRepository.findById(userDetails.getId())
+        .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
+    if (user.getMilitaryPersonnelId() == null) {
+      throw new AppException(ErrorCode.PERSONNEL_NOT_FOUND);
+    }
+    MilitaryPersonnel personnel = militaryPersonnelRepository.findById(user.getMilitaryPersonnelId())
+        .orElseThrow(() -> new AppException(ErrorCode.PERSONNEL_NOT_FOUND));
+    if (personnel.getUnitCode() == null) {
+      throw new AppException(ErrorCode.PERSONNEL_NOT_FOUND);
+    }
+    return new UserComboboxScope(false, personnel.getUnitCode());
   }
 
   @Override
@@ -211,5 +245,8 @@ public class CommonServiceImpl implements CommonService {
   }
 
   private record AccessScope(boolean systemAdmin, boolean adminUnit, String unitCode) {
+  }
+
+  private record UserComboboxScope(boolean systemAdmin, String unitCode) {
   }
 }
