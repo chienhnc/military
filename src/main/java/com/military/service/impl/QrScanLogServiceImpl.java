@@ -23,10 +23,14 @@ import com.military.repository.MilitaryPersonnelRepository;
 import com.military.repository.QrScanLogRepository;
 import com.military.repository.VehicleRepository;
 import com.military.service.QrScanLogService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,6 +90,26 @@ public class QrScanLogServiceImpl implements QrScanLogService {
   @Override
   public QrScanLogResponse getById(Long id) {
     return toResponse(findLogById(id));
+  }
+
+  @Override
+  public Page<QrScanLogResponse> list(EQrScanType scanType, EQrScanStatus status, Pageable pageable) {
+    List<QrScanLogResponse> data = qrScanLogRepository.findAllList().stream()
+        .filter(item -> scanType == null || scanType == item.getScanType())
+        .filter(item -> status == null || status == item.getStatus())
+        .sorted(Comparator.comparing(QrScanLog::getScannedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+        .map(this::toResponse)
+        .toList();
+    return paginate(data, pageable);
+  }
+
+  private Page<QrScanLogResponse> paginate(List<QrScanLogResponse> data, Pageable pageable) {
+    int start = (int) pageable.getOffset();
+    if (start >= data.size()) {
+      return new PageImpl<>(List.of(), pageable, data.size());
+    }
+    int end = Math.min(start + pageable.getPageSize(), data.size());
+    return new PageImpl<>(data.subList(start, end), pageable, data.size());
   }
 
   private QrScanLogResponse scanCitizen(QrCitizenDataRequest citizen) {

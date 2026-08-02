@@ -196,6 +196,13 @@
 - `militaryPersonnelImageUrl`: URL ảnh đại diện (`/api/common/images/personnel/{filename}`), `null` nếu chưa có ảnh.
 - `militaryPersonnelVehicle`: thông tin phương tiện (biển số, loại xe, ảnh xe...), `null` nếu quân nhân chưa gắn phương tiện.
 
+### 8.5 Danh sách log ra vào cổng
+- API: `GET /api/qr-scan-logs`.
+- Tham số: `page`, `size` (mặc định `page=0`, `size=10`), lọc tùy chọn `scanType` (`MILITARY`/`CITIZEN`), `status` (`DANG_XU_LY`/`DONG_Y`/`TU_CHOI`).
+- Sắp xếp theo `scannedAt` giảm dần (log quét mới nhất lên đầu).
+- Mỗi phần tử trả về cùng cấu trúc `QrScanLogResponse` như API chi tiết (bao gồm ảnh đại diện/phương tiện với log quân nhân).
+- Không giới hạn phạm vi theo role/đơn vị, giống các API `scan`/`approve`/`reject`/chi tiết hiện có của module này.
+
 ## 9. Quản lý file dùng chung
 - Upload ảnh/logo:
 - `POST /api/common/upload-image?category=personnel|region|unit`.
@@ -287,3 +294,4 @@
 - `POST /api/qr-scan-logs/{id}/approve`
 - `POST /api/qr-scan-logs/{id}/reject`
 - `GET /api/qr-scan-logs/{id}`
+- `GET /api/qr-scan-logs` (danh sách, lọc `scanType`/`status`, phân trang)
