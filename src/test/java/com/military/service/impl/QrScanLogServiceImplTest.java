@@ -1,11 +1,14 @@
 package com.military.service.impl;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.military.config.GsonConfig;
 import com.military.models.EQrScanStatus;
 import com.military.models.EQrScanType;
 import com.military.models.MilitaryPersonnel;
 import com.military.models.QrScanLog;
 import com.military.models.Vehicle;
+import com.military.payload.request.QrCitizenDataRequest;
 import com.military.payload.request.QrMilitaryPersonnelDataRequest;
 import com.military.payload.request.QrScanRequest;
 import com.military.payload.response.QrScanLogResponse;
@@ -23,11 +26,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,13 +58,16 @@ class QrScanLogServiceImplTest {
 
   @BeforeEach
   void setUp() {
+    GsonBuilder gsonBuilder = new GsonBuilder();
+    new GsonConfig().localDateGsonCustomizer().customize(gsonBuilder);
+    Gson gson = gsonBuilder.create();
     qrScanLogService = new QrScanLogServiceImpl(
         qrScanLogRepository,
         militaryPersonnelRepository,
         leaveRequestRepository,
         leaveRequestHistoryRepository,
         vehicleRepository,
-        new Gson()
+        gson
     );
   }
 
@@ -123,6 +131,35 @@ class QrScanLogServiceImplTest {
 
     assertNull(response.getMilitaryPersonnelImageUrl());
     assertNull(response.getMilitaryPersonnelVehicle());
+  }
+
+  @Test
+  @DisplayName("Should persist a citizen scan whose QR payload contains LocalDate fields")
+  void testScanCitizenWithLocalDateFields() {
+    stubSaveReturnsArgument();
+
+    QrCitizenDataRequest citizen = new QrCitizenDataRequest();
+    citizen.setCitizenId("001200016895");
+    citizen.setName("Tran Hoang Long Hai");
+    citizen.setBirthday(LocalDate.of(2000, 10, 19));
+    citizen.setAddress("Cum 3, Thuong Phuc, Ha Noi");
+    citizen.setIssueDate(LocalDate.of(2025, 10, 13));
+    QrScanRequest request = new QrScanRequest();
+    request.setCitizen(citizen);
+
+    QrScanLogResponse response = qrScanLogService.scan(request);
+
+    assertEquals(EQrScanStatus.DANG_XU_LY.name(), response.getStatus());
+    assertEquals("001200016895", response.getCitizenId());
+    assertEquals(LocalDate.of(2000, 10, 19), response.getCitizenBirthday());
+
+    org.mockito.ArgumentCaptor<QrScanLog> captor = org.mockito.ArgumentCaptor.forClass(QrScanLog.class);
+    org.mockito.Mockito.verify(qrScanLogRepository).save(captor.capture());
+    String payloadJson = captor.getValue().getPayloadJson();
+    assertTrue(payloadJson.contains("2000-10-19"),
+        "payloadJson should serialize birthday as ISO date, got: " + payloadJson);
+    assertTrue(payloadJson.contains("2025-10-13"),
+        "payloadJson should serialize issueDate as ISO date, got: " + payloadJson);
   }
 
   @Test
